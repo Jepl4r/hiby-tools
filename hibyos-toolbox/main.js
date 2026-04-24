@@ -89,6 +89,7 @@ function getEnv() {
 
   env.PATH = extraPaths.join(sep) + sep + (env.PATH || "");
   env.PYTHONDONTWRITEBYTECODE = "1";
+  env.PYTHONUNBUFFERED = "1";
   return env;
 }
 
@@ -380,40 +381,40 @@ ipcMain.handle(
   "run-db-update",
   async (event, { sdPath, embedArt, resizeCovers }) => {
     return new Promise((resolve) => {
-      const scriptPath = path.join(getScriptsPath(), "Update_Database.py");
+      const scriptPath = path.join(getScriptsPath(), "electron_db_wrapper.py");
       const python = resolveCmd("python3");
 
-      function sendLog(msg) {
-        mainWindow.webContents.send("db-log", msg);
+      function sendLog(type, msg) {
+        mainWindow.webContents.send("db-log", `${type}:${msg}`);
       }
 
-      sendLog(`$ python3 Update_Database.py "${sdPath}"`);
-
-      const input = [embedArt ? "y" : "n", resizeCovers ? "y" : "n"].join("\n") + "\n";
-      const proc = spawn(python, [scriptPath], { cwd: sdPath, env: getEnv() });
-
-      proc.stdin.write(input);
-      proc.stdin.end();
+      const proc = spawn(python, ["-u", scriptPath, sdPath, embedArt ? "y" : "n", resizeCovers ? "y" : "n"], {
+        cwd: sdPath,
+        env: getEnv(),
+      });
 
       proc.stdout.on("data", (data) => {
         for (const line of data.toString().split("\n")) {
-          if (line.trim()) sendLog(line);
+          const trimmed = line.trim();
+          if (trimmed) {
+            // Forward structured lines as-is
+            mainWindow.webContents.send("db-log", trimmed);
+          }
         }
       });
-      proc.stderr.on("data", (data) => sendLog(data.toString().trimEnd()));
+
+      proc.stderr.on("data", (data) => {
+        mainWindow.webContents.send("db-log", `ERROR:${data.toString().trim()}`);
+      });
 
       proc.on("close", (code) => {
         if (code === 0) {
-          sendLog("");
-          sendLog("✅ Database updated successfully!");
           resolve({ success: true });
         } else {
-          sendLog(`❌ Process exited with code ${code}`);
           resolve({ success: false, error: `Exit code: ${code}` });
         }
       });
       proc.on("error", (err) => {
-        sendLog(`❌ Failed to start: ${err.message}`);
         resolve({ success: false, error: err.message });
       });
     });

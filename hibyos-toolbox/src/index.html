@@ -76,14 +76,49 @@
     .nav-btn.active .icon { background: rgba(200, 164, 90, 0.15); }
 
     /* ─── Sidebar Settings ─── */
+    /* ─── Light theme ─── */
+    .theme-light {
+      --bg-primary: #f5f4f1;
+      --bg-secondary: #eae9e5;
+      --bg-tertiary: #e0dfdb;
+      --bg-hover: #d8d7d3;
+      --border: #cccbc6;
+      --border-light: #b8b7b2;
+      --text-primary: #1a1a1e;
+      --text-secondary: #5c5b68;
+      --text-muted: #8e8d98;
+      --green: #2e8b40;
+      --green-dim: rgba(46, 139, 64, 0.1);
+      --red: #c93c3c;
+      --red-dim: rgba(201, 60, 60, 0.1);
+      --blue: #3a7bb5;
+    }
+    .theme-light .terminal { background: #e4e3df; }
+    .theme-light .btn-primary { color: #fff; }
+
     .sidebar-settings {
-      padding: 12px 14px;
       border-top: 1px solid var(--border);
       -webkit-app-region: no-drag;
     }
-    .settings-title {
-      font-size: 10px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 10px;
+    .settings-toggle-btn {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 10px 14px; border: none; background: transparent;
+      color: var(--text-muted); font-family: var(--font); font-size: 11px;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .settings-toggle-btn:hover { color: var(--text-secondary); }
+    .settings-toggle-btn .chevron {
+      transition: transform 0.2s ease; font-size: 10px;
+    }
+    .settings-toggle-btn.open .chevron { transform: rotate(90deg); }
+    .settings-panel {
+      max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
+      padding: 0 14px;
+    }
+    .settings-panel.open {
+      max-height: 300px;
+      padding: 0 14px 12px;
     }
     .setting-row {
       margin-bottom: 10px;
@@ -276,6 +311,23 @@
     .result-banner.success { background: var(--green-dim); border: 1px solid rgba(92, 186, 111, 0.2); color: var(--green); }
     .result-banner.error { background: var(--red-dim); border: 1px solid rgba(226, 92, 92, 0.2); color: var(--red); }
 
+    .db-stat {
+      display: flex; align-items: baseline; gap: 6px;
+      padding: 8px 14px; background: var(--bg-primary); border-radius: var(--radius-sm);
+    }
+    .db-stat-val { font-size: 18px; font-weight: 700; color: var(--accent); font-family: var(--mono); }
+    .db-stat-label { font-size: 11px; color: var(--text-muted); }
+
+    .db-summary-grid {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;
+    }
+    .db-summary-item {
+      padding: 8px 14px; background: var(--bg-primary); border-radius: var(--radius-sm);
+      display: flex; align-items: baseline; gap: 6px;
+    }
+    .db-summary-val { font-size: 15px; font-weight: 700; color: var(--accent); font-family: var(--mono); }
+    .db-summary-label { font-size: 11px; color: var(--text-muted); }
+
     .mt-8 { margin-top: 8px; }
     .mt-12 { margin-top: 12px; }
     .flex { display: flex; }
@@ -374,36 +426,49 @@
 
       <!-- ═══ Settings ═══ -->
       <div class="sidebar-settings">
-        <div class="settings-title" data-i18n="settings.title">SETTINGS</div>
-        <div class="setting-row">
-          <div class="setting-label" data-i18n="settings.language">Language</div>
-          <select class="setting-select" id="lang-select" onchange="setLang(this.value)">
-            <option value="en">English</option>
-            <option value="it">Italiano</option>
-            <option value="de">Deutsch</option>
-            <option value="fr">Français</option>
-            <option value="es">Español</option>
-          </select>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label" data-i18n="settings.accent">Accent color</div>
-          <div class="color-swatches">
-            <div class="color-swatch active" style="background:#c8a45a" onclick="setAccent('gold')" title="Gold"></div>
-            <div class="color-swatch" style="background:#42817C" onclick="setAccent('teal')" title="Teal"></div>
-            <div class="color-swatch" style="background:#B96C35" onclick="setAccent('copper')" title="Copper"></div>
+        <button class="settings-toggle-btn" id="settings-toggle" onclick="toggleSettings()">
+          <span class="chevron">▸</span>
+          <span data-i18n="settings.title">SETTINGS</span>
+        </button>
+        <div class="settings-panel" id="settings-panel">
+          <div class="setting-row">
+            <div class="setting-label" data-i18n="settings.theme">Theme</div>
+            <select class="setting-select" id="theme-select" onchange="setTheme(this.value)">
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+              <option value="system">System</option>
+            </select>
           </div>
-        </div>
-        <div class="setting-row">
-          <button class="btn btn-sm" style="width:100%;justify-content:center;" onclick="openDepsModal()">
-            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><line x1="7" y1="6" x2="7" y2="10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="4" r="0.8" fill="currentColor"/></svg>
-            <span data-i18n="deps.btn">Check dependencies</span>
-          </button>
+          <div class="setting-row">
+            <div class="setting-label" data-i18n="settings.language">Language</div>
+            <select class="setting-select" id="lang-select" onchange="setLang(this.value)">
+              <option value="en">English</option>
+              <option value="it">Italiano</option>
+              <option value="de">Deutsch</option>
+              <option value="fr">Français</option>
+              <option value="es">Español</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div class="setting-label" data-i18n="settings.accent">Accent color</div>
+            <div class="color-swatches">
+              <div class="color-swatch active" style="background:#c8a45a" onclick="setAccent('gold')" title="Gold"></div>
+              <div class="color-swatch" style="background:#42817C" onclick="setAccent('teal')" title="Teal"></div>
+              <div class="color-swatch" style="background:#B96C35" onclick="setAccent('copper')" title="Copper"></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <button class="btn btn-sm" style="width:100%;justify-content:center;" onclick="openDepsModal()">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><line x1="7" y1="6" x2="7" y2="10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="4" r="0.8" fill="currentColor"/></svg>
+              <span data-i18n="deps.btn">Check dependencies</span>
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- ═══ Footer / Version ═══ -->
       <div class="sidebar-footer">
-        <div class="version-info">v1.0.0</div>
+        <div class="version-info">v1.0.1</div>
         <button class="info-btn" onclick="switchPage('credits')" title="Credits">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <circle cx="5" cy="5" r="4.2" stroke="currentColor" stroke-width="1.1"/>
@@ -513,15 +578,22 @@
             <div class="card-title"><span class="card-number">3</span> <span data-i18n="db.step3.title">Update Database</span></div>
             <div class="card-desc" data-i18n="db.step3.desc">Scan the SD card, read audio tags and rebuild usrlocal_media.db.</div>
             <div id="db-result"></div>
-            <div id="db-running" style="display:none;" class="running-bar">
-              <div class="spinner"></div>
-              <span class="running-text" data-i18n="db.running">Updating…</span>
+            <div id="db-running" style="display:none;">
+              <div class="running-bar">
+                <div class="spinner"></div>
+                <span class="running-text" id="db-status-text">Updating…</span>
+                <span class="running-text" id="db-pct" style="margin-left:auto;"></span>
+              </div>
+              <div id="db-found" style="display:none; font-size:13px; color:var(--text-secondary); margin-top:8px; margin-bottom:12px;"></div>
             </div>
+            <!-- Summary after completion -->
+            <div id="db-summary" style="display:none; margin-bottom:16px;"></div>
             <button class="btn btn-primary" id="db-run-btn" onclick="runDbUpdate()" disabled>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 2v10l9-5-9-5z" fill="currentColor"/></svg>
               <span data-i18n="db.step3.btn">Update Database</span>
             </button>
-            <div id="db-terminal" class="terminal mt-12" style="display:none;"></div>
+            <!-- Errors only -->
+            <div id="db-errors" class="terminal mt-12" style="display:none;"></div>
           </div>
         </div>
 
@@ -574,6 +646,48 @@
 
   <script>
     // ═══════════════════════════════════════════════
+    // SETTINGS PANEL
+    // ═══════════════════════════════════════════════
+    function toggleSettings() {
+      const btn = document.getElementById("settings-toggle");
+      const panel = document.getElementById("settings-panel");
+      btn.classList.toggle("open");
+      panel.classList.toggle("open");
+    }
+
+    // ═══════════════════════════════════════════════
+    // THEME (dark / light / system)
+    // ═══════════════════════════════════════════════
+    let currentTheme = "dark";
+    try { currentTheme = localStorage.getItem("theme") || "dark"; } catch {}
+
+    function applyThemeClass(mode) {
+      document.documentElement.classList.remove("theme-light");
+      if (mode === "light") {
+        document.documentElement.classList.add("theme-light");
+      }
+    }
+
+    function resolveTheme(pref) {
+      if (pref === "system") {
+        return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      }
+      return pref;
+    }
+
+    function setTheme(pref) {
+      currentTheme = pref;
+      try { localStorage.setItem("theme", pref); } catch {}
+      applyThemeClass(resolveTheme(pref));
+      document.getElementById("theme-select").value = pref;
+    }
+
+    // Listen for system theme changes when set to "system"
+    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
+      if (currentTheme === "system") applyThemeClass(resolveTheme("system"));
+    });
+
+    // ═══════════════════════════════════════════════
     // ACCENT COLORS
     // ═══════════════════════════════════════════════
     const ACCENTS = {
@@ -602,7 +716,7 @@
     const I18N = {
       en: {
         "nav.firmware": "Firmware Modder", "nav.database": "Database Updater",
-        "settings.title": "SETTINGS", "settings.language": "Language", "settings.accent": "Accent color",
+        "settings.title": "SETTINGS", "settings.language": "Language", "settings.accent": "Accent color", "settings.theme": "Theme",
         "fw.step1.title": "Project Folder",
         "fw.step1.desc": "Select the main project folder (must contain Firmware, Binaries, Themes subfolders).",
         "fw.noFolder": "No folder selected", "fw.browse": "Browse…",
@@ -624,6 +738,9 @@
         "db.resize.label": "Resize folder cover images", "db.resize.sub": "Resize cover.jpg, folder.jpg etc. to 360×360",
         "db.step3.title": "Update Database", "db.step3.desc": "Scan the SD card, read audio tags and rebuild usrlocal_media.db.",
         "db.step3.btn": "Update Database", "db.running": "Updating…", "db.success": "✅ Database updated successfully!",
+        "db.phase.scanning": "Scanning…", "db.phase.embedding": "Embedding album art…", "db.phase.reading": "Reading tags…",
+        "db.phase.writing": "Writing database…", "db.phase.resizing": "Resizing covers…",
+        "db.stat.files": "audio files", "db.stat.playlists": "playlists",
         "db.dbFound": "✓ usrlocal_media.db found", "db.dbNotFound": "⚠ usrlocal_media.db not found — script will search for it",
         "deps.title": "Dependencies", "deps.desc": "Status of the tools required by the scripts.",
         "deps.empty": "Click \"Check\" to verify", "deps.btn": "Check dependencies",
@@ -633,7 +750,7 @@
       },
       it: {
         "nav.firmware": "Firmware Modder", "nav.database": "Database Updater",
-        "settings.title": "IMPOSTAZIONI", "settings.language": "Lingua", "settings.accent": "Colore accento",
+        "settings.title": "IMPOSTAZIONI", "settings.language": "Lingua", "settings.accent": "Colore accento", "settings.theme": "Tema",
         "fw.step1.title": "Cartella Progetto",
         "fw.step1.desc": "Seleziona la cartella principale del progetto (deve contenere le sottocartelle Firmware, Binaries, Themes).",
         "fw.noFolder": "Nessuna cartella selezionata", "fw.browse": "Sfoglia…",
@@ -655,6 +772,9 @@
         "db.resize.label": "Ridimensiona cover delle cartelle", "db.resize.sub": "Ridimensiona cover.jpg, folder.jpg ecc. a 360×360",
         "db.step3.title": "Aggiorna Database", "db.step3.desc": "Scansiona la SD card, legge i tag audio e ricostruisce usrlocal_media.db.",
         "db.step3.btn": "Aggiorna Database", "db.running": "Aggiornamento in corso…", "db.success": "✅ Database aggiornato con successo!",
+        "db.phase.scanning": "Scansione…", "db.phase.embedding": "Incorporamento copertine…", "db.phase.reading": "Lettura tag…",
+        "db.phase.writing": "Scrittura database…", "db.phase.resizing": "Ridimensionamento copertine…",
+        "db.stat.files": "file audio", "db.stat.playlists": "playlist",
         "db.dbFound": "✓ usrlocal_media.db trovato", "db.dbNotFound": "⚠ usrlocal_media.db non trovato — verrà cercato dallo script",
         "deps.title": "Dipendenze", "deps.desc": "Lo stato dei tool necessari per il funzionamento degli script.",
         "deps.empty": "Clicca \"Verifica\" per controllare", "deps.btn": "Verifica dipendenze",
@@ -664,7 +784,7 @@
       },
       de: {
         "nav.firmware": "Firmware Modder", "nav.database": "Datenbank Updater",
-        "settings.title": "EINSTELLUNGEN", "settings.language": "Sprache", "settings.accent": "Akzentfarbe",
+        "settings.title": "EINSTELLUNGEN", "settings.language": "Sprache", "settings.accent": "Akzentfarbe", "settings.theme": "Design",
         "fw.step1.title": "Projektordner",
         "fw.step1.desc": "Wähle den Hauptprojektordner (muss die Unterordner Firmware, Binaries, Themes enthalten).",
         "fw.noFolder": "Kein Ordner ausgewählt", "fw.browse": "Durchsuchen…",
@@ -686,6 +806,9 @@
         "db.resize.label": "Ordner-Cover skalieren", "db.resize.sub": "cover.jpg, folder.jpg usw. auf 360×360 skalieren",
         "db.step3.title": "Datenbank aktualisieren", "db.step3.desc": "SD-Karte scannen, Audio-Tags lesen und usrlocal_media.db neu aufbauen.",
         "db.step3.btn": "Datenbank aktualisieren", "db.running": "Wird aktualisiert…", "db.success": "✅ Datenbank erfolgreich aktualisiert!",
+        "db.phase.scanning": "Scannen…", "db.phase.embedding": "Cover einbetten…", "db.phase.reading": "Tags lesen…",
+        "db.phase.writing": "Datenbank schreiben…", "db.phase.resizing": "Cover skalieren…",
+        "db.stat.files": "Audiodateien", "db.stat.playlists": "Playlists",
         "db.dbFound": "✓ usrlocal_media.db gefunden", "db.dbNotFound": "⚠ usrlocal_media.db nicht gefunden — Skript sucht danach",
         "deps.title": "Abhängigkeiten", "deps.desc": "Status der benötigten Tools.",
         "deps.empty": "Klicke \"Prüfen\" zum Verifizieren", "deps.btn": "Abhängigkeiten prüfen",
@@ -695,7 +818,7 @@
       },
       fr: {
         "nav.firmware": "Firmware Modder", "nav.database": "Mise à jour BDD",
-        "settings.title": "PARAMÈTRES", "settings.language": "Langue", "settings.accent": "Couleur d'accent",
+        "settings.title": "PARAMÈTRES", "settings.language": "Langue", "settings.accent": "Couleur d'accent", "settings.theme": "Thème",
         "fw.step1.title": "Dossier du projet",
         "fw.step1.desc": "Sélectionnez le dossier principal du projet (doit contenir les sous-dossiers Firmware, Binaries, Themes).",
         "fw.noFolder": "Aucun dossier sélectionné", "fw.browse": "Parcourir…",
@@ -717,6 +840,9 @@
         "db.resize.label": "Redimensionner les images de dossier", "db.resize.sub": "Redimensionner cover.jpg, folder.jpg etc. à 360×360",
         "db.step3.title": "Mettre à jour la BDD", "db.step3.desc": "Scanner la carte SD, lire les tags audio et reconstruire usrlocal_media.db.",
         "db.step3.btn": "Mettre à jour la BDD", "db.running": "Mise à jour en cours…", "db.success": "✅ Base de données mise à jour avec succès !",
+        "db.phase.scanning": "Analyse…", "db.phase.embedding": "Intégration des pochettes…", "db.phase.reading": "Lecture des tags…",
+        "db.phase.writing": "Écriture de la BDD…", "db.phase.resizing": "Redimensionnement…",
+        "db.stat.files": "fichiers audio", "db.stat.playlists": "playlists",
         "db.dbFound": "✓ usrlocal_media.db trouvé", "db.dbNotFound": "⚠ usrlocal_media.db non trouvé — le script le cherchera",
         "deps.title": "Dépendances", "deps.desc": "État des outils requis par les scripts.",
         "deps.empty": "Cliquez \"Vérifier\" pour contrôler", "deps.btn": "Vérifier les dépendances",
@@ -726,7 +852,7 @@
       },
       es: {
         "nav.firmware": "Firmware Modder", "nav.database": "Actualizar BD",
-        "settings.title": "AJUSTES", "settings.language": "Idioma", "settings.accent": "Color de acento",
+        "settings.title": "AJUSTES", "settings.language": "Idioma", "settings.accent": "Color de acento", "settings.theme": "Tema",
         "fw.step1.title": "Carpeta del proyecto",
         "fw.step1.desc": "Selecciona la carpeta principal del proyecto (debe contener las subcarpetas Firmware, Binaries, Themes).",
         "fw.noFolder": "Ninguna carpeta seleccionada", "fw.browse": "Examinar…",
@@ -748,6 +874,9 @@
         "db.resize.label": "Redimensionar imágenes de carpeta", "db.resize.sub": "Redimensionar cover.jpg, folder.jpg etc. a 360×360",
         "db.step3.title": "Actualizar base de datos", "db.step3.desc": "Escanear la tarjeta SD, leer etiquetas de audio y reconstruir usrlocal_media.db.",
         "db.step3.btn": "Actualizar BD", "db.running": "Actualizando…", "db.success": "✅ ¡Base de datos actualizada con éxito!",
+        "db.phase.scanning": "Escaneando…", "db.phase.embedding": "Incrustando carátulas…", "db.phase.reading": "Leyendo etiquetas…",
+        "db.phase.writing": "Escribiendo base de datos…", "db.phase.resizing": "Redimensionando…",
+        "db.stat.files": "archivos de audio", "db.stat.playlists": "playlists",
         "db.dbFound": "✓ usrlocal_media.db encontrado", "db.dbNotFound": "⚠ usrlocal_media.db no encontrado — el script lo buscará",
         "deps.title": "Dependencias", "deps.desc": "Estado de las herramientas requeridas por los scripts.",
         "deps.empty": "Haz clic en \"Verificar\" para comprobar", "deps.btn": "Verificar dependencias",
@@ -808,6 +937,25 @@
         if (btn) btn.classList.add("active");
       }
       document.getElementById("page-title").textContent = t(`title.${page}`);
+    }
+
+    // ═══════════════════════════════════════════════
+    // LOCK / UNLOCK PAGE CONTROLS
+    // ═══════════════════════════════════════════════
+    function setPageLocked(pageId, locked) {
+      const page = document.getElementById(pageId);
+      if (!page) return;
+      page.querySelectorAll(".btn, .toggle, .select-item, .file-selector .btn").forEach(el => {
+        // Don't touch the main run button (handled separately) or the open-folder button
+        if (el.id && (el.id.endsWith("-run-btn") || el.id.endsWith("-open-btn"))) return;
+        if (locked) {
+          el.style.pointerEvents = "none";
+          el.style.opacity = "0.4";
+        } else {
+          el.style.pointerEvents = "";
+          el.style.opacity = "";
+        }
+      });
     }
 
     // ═══════════════════════════════════════════════
@@ -897,6 +1045,7 @@
 
     async function runFirmwareMod() {
       state.fwRunning = true; updateFwRunBtn();
+      setPageLocked("page-firmware", true);
       document.getElementById("fw-running").style.display = "";
       document.getElementById("fw-result").innerHTML = "";
       document.getElementById("fw-open-btn").style.display = "none";
@@ -919,6 +1068,7 @@
       });
 
       cleanup(); state.fwRunning = false;
+      setPageLocked("page-firmware", false);
       document.getElementById("fw-running").style.display = "none"; updateFwRunBtn();
       const resultDiv = document.getElementById("fw-result");
       if (result.success) {
@@ -963,18 +1113,83 @@
 
     async function runDbUpdate() {
       state.dbRunning = true; updateDbRunBtn();
+      setPageLocked("page-database", true);
       document.getElementById("db-running").style.display = "";
       document.getElementById("db-result").innerHTML = "";
-      const terminal = document.getElementById("db-terminal");
-      terminal.style.display = ""; terminal.innerHTML = "";
+      document.getElementById("db-summary").style.display = "none";
+      document.getElementById("db-summary").innerHTML = "";
+
+      const errorsDiv = document.getElementById("db-errors");
+      errorsDiv.style.display = "none"; errorsDiv.innerHTML = "";
+
+      const statusText = document.getElementById("db-status-text");
+      const pctEl = document.getElementById("db-pct");
+      const foundDiv = document.getElementById("db-found");
+      statusText.textContent = t("db.running") || "Updating…";
+      pctEl.textContent = "";
+      foundDiv.style.display = "none";
+
+      const summaryData = {};
 
       const cleanup = window.api.onDbLog(msg => {
-        const line = document.createElement("div");
-        if (msg.startsWith("$")) line.className = "cmd";
-        else if (msg.includes("✅") || msg.includes("Done")) line.className = "ok";
-        else if (msg.includes("❌") || msg.includes("ERROR") || msg.includes("WARNING")) line.className = "err";
-        line.textContent = msg; terminal.appendChild(line);
-        terminal.scrollTop = terminal.scrollHeight;
+        if (!msg) return;
+
+        // PROGRESS:pct:current:total
+        if (msg.startsWith("PROGRESS:")) {
+          const parts = msg.split(":");
+          pctEl.textContent = parts[1] + "%";
+          return;
+        }
+
+        // STATUS:message
+        if (msg.startsWith("STATUS:")) {
+          const status = msg.substring(7);
+
+          if (status.startsWith("Found ")) {
+            foundDiv.style.display = "";
+            foundDiv.textContent = status;
+            statusText.textContent = t("db.running") || "Updating…";
+            pctEl.textContent = "";
+          } else if (status.startsWith("Scanning")) {
+            statusText.textContent = t("db.phase.scanning") || "Scanning…";
+            pctEl.textContent = "";
+          } else if (status.startsWith("Embedding")) {
+            statusText.textContent = t("db.phase.embedding") || "Embedding album art…";
+            pctEl.textContent = "0%";
+          } else if (status.startsWith("Reading")) {
+            statusText.textContent = t("db.phase.reading") || "Reading tags…";
+            pctEl.textContent = "0%";
+          } else if (status.startsWith("Writing")) {
+            statusText.textContent = t("db.phase.writing") || "Writing database…";
+            pctEl.textContent = "";
+          } else if (status.startsWith("Resiz")) {
+            statusText.textContent = t("db.phase.resizing") || "Resizing covers…";
+            pctEl.textContent = "";
+          }
+          return;
+        }
+
+        // RESULT:key:value
+        if (msg.startsWith("RESULT:")) {
+          const rest = msg.substring(7);
+          const idx = rest.indexOf(":");
+          if (idx >= 0) {
+            summaryData[rest.substring(0, idx)] = rest.substring(idx + 1);
+          }
+          return;
+        }
+
+        // ERROR:message
+        if (msg.startsWith("ERROR:")) {
+          errorsDiv.style.display = "";
+          const line = document.createElement("div");
+          line.className = "err";
+          line.textContent = msg.substring(6);
+          errorsDiv.appendChild(line);
+          return;
+        }
+
+        // DONE — ignore, handled by close
       });
 
       const result = await window.api.runDbUpdate({
@@ -982,10 +1197,30 @@
       });
 
       cleanup(); state.dbRunning = false;
+      setPageLocked("page-database", false);
       document.getElementById("db-running").style.display = "none"; updateDbRunBtn();
+
       const resultDiv = document.getElementById("db-result");
       if (result.success) {
         resultDiv.innerHTML = `<div class="result-banner success">${t("db.success")}</div>`;
+
+        if (Object.keys(summaryData).length > 0) {
+          const summaryDiv = document.getElementById("db-summary");
+          summaryDiv.style.display = "";
+          const labelMap = {
+            tracks: "tracks", albums: "albums", artists: "artists",
+            genres: "genres", album_artists: "album artists", playlists: "playlists",
+            elapsed: "seconds", art_embedded: "art embedded",
+            art_failures: "art errors", covers_resized: "covers resized",
+            cover_resize_failures: "resize errors", tag_failures: "tag errors",
+          };
+          let html = '<div class="db-summary-grid">';
+          for (const [key, val] of Object.entries(summaryData)) {
+            html += `<div class="db-summary-item"><span class="db-summary-val">${val}</span><span class="db-summary-label">${labelMap[key] || key}</span></div>`;
+          }
+          html += '</div>';
+          summaryDiv.innerHTML = html;
+        }
       } else {
         resultDiv.innerHTML = `<div class="result-banner error">❌ ${result.error}</div>`;
       }
@@ -1027,6 +1262,8 @@
     // INIT
     // ═══════════════════════════════════════════════
     setAccent(currentAccent);
+    applyThemeClass(resolveTheme(currentTheme));
+    document.getElementById("theme-select").value = currentTheme;
     applyLang();
   </script>
 </body>
