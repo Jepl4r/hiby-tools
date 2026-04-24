@@ -4,6 +4,11 @@ Desktop app for modding HibyOS firmware and updating the music database on HiBy 
 
 Built with Electron. Runs on macOS, Linux, and Windows.
 
+![](https://github.com/Jepl4r/hiby-tools/Screenshots/Firmware%20Modder.png)
+
+![](https://github.com/Jepl4r/hiby-tools/Screenshots/Database%20Updater.png)
+
+
 ## Features
 
 **Firmware Modder** — Unpack, modify, and repack HibyOS firmware (`.upt` files):
