@@ -1,9 +1,9 @@
 #!/bin/bash
 # ─────────────────────────────────────────────
-# Automatically copy system binaries
-# to the scripts/bin/ folder of the project.
-# Only for macOS and Linux
-# Use: ./bundle-bins.sh
+# Bundle system binaries into the app.
+# Works on macOS and Linux.
+#
+# Usage: ./bundle-bins.sh
 # ─────────────────────────────────────────────
 
 set -e
@@ -19,9 +19,16 @@ if [ "$OS" = "Darwin" ]; then
         TARGET="darwin-x64"
     fi
 elif [ "$OS" = "Linux" ]; then
-    TARGET="linux-x64"
+    case "$ARCH" in
+        x86_64)  TARGET="linux-x64" ;;
+        aarch64) TARGET="linux-arm64" ;;
+        *)
+            echo "❌ Unsupported Linux architecture: $ARCH"
+            exit 1
+            ;;
+    esac
 else
-    echo "OS not supported: $OS"
+    echo "❌ Unsupported OS: $OS"
     exit 1
 fi
 
@@ -29,22 +36,63 @@ BIN_DIR="$SCRIPT_DIR/scripts/bin/$TARGET"
 mkdir -p "$BIN_DIR"
 
 echo "Platform: $TARGET"
-echo "Folder: $BIN_DIR"
+echo "Output:   $BIN_DIR"
 echo ""
 
-TOOLS=("7z" "unsquashfs" "mksquashfs" "mkisofs")
+FOUND=0
+MISSING=0
 
-for tool in "${TOOLS[@]}"; do
-    path=$(which "$tool" 2>/dev/null || true)
-    if [ -n "$path" ]; then
-        cp "$path" "$BIN_DIR/"
-        chmod +x "$BIN_DIR/$tool"
-        echo "✅ $tool → copied from $path"
+copy_tool() {
+    local target_name="$1"
+    shift
+    local candidates=("$@")
+
+    for cmd in "${candidates[@]}"; do
+        local cmd_path
+        cmd_path=$(which "$cmd" 2>/dev/null || true)
+        if [ -n "$cmd_path" ]; then
+            cp "$cmd_path" "$BIN_DIR/$target_name"
+            chmod +x "$BIN_DIR/$target_name"
+            if [ "$cmd" != "$target_name" ]; then
+                echo "✅ $target_name → copied from $cmd_path (via $cmd)"
+            else
+                echo "✅ $target_name → copied from $cmd_path"
+            fi
+            FOUND=$((FOUND + 1))
+            return 0
+        fi
+    done
+
+    echo "⚠️  $target_name → not found (tried: ${candidates[*]})"
+    MISSING=$((MISSING + 1))
+    return 1
+}
+
+copy_tool "7z"         "7z" "7za" "7zr" || true
+
+copy_tool "unsquashfs" "unsquashfs" || true
+copy_tool "mksquashfs" "mksquashfs" || true
+
+copy_tool "mkisofs"    "mkisofs" "genisoimage" || true
+
+copy_tool "md5sum"     "md5sum" || true
+
+copy_tool "split"      "split" || true
+
+echo ""
+echo "────────────────────────────────"
+echo "Done! $FOUND tools bundled, $MISSING missing."
+
+if [ $MISSING -gt 0 ]; then
+    echo ""
+    echo "To install missing tools:"
+    if [ "$OS" = "Darwin" ]; then
+        echo "  brew install p7zip squashfs cdrtools"
     else
-        echo "⚠️  $tool → Not found in the system, skipped"
+        echo "  sudo apt install p7zip-full squashfs-tools genisoimage"
+        echo "  # or on Fedora/RHEL:"
+        echo "  sudo dnf install p7zip p7zip-plugins squashfs-tools genisoimage"
+        echo "  # or on Arch:"
+        echo "  sudo pacman -S p7zip squashfs-tools cdrtools"
     fi
-done
-
-echo ""
-echo "Done! Binaries copied into: $BIN_DIR"
-echo ""
+fi
