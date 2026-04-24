@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HibyOS Toolbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary: #0f0f13;
+      --bg-secondary: #18181f;
+      --bg-tertiary: #1e1e28;
+      --bg-hover: #252530;
+      --border: #2a2a38;
+      --border-light: #35354a;
+      --text-primary: #e8e6e3;
+      --text-secondary: #9997a7;
+      --text-muted: #5e5c6e;
+      --accent: #c8a45a;
+      --accent-dim: #a08040;
+      --accent-glow: rgba(200, 164, 90, 0.15);
+      --green: #5cba6f;
+      --green-dim: rgba(92, 186, 111, 0.12);
+      --red: #e25c5c;
+      --red-dim: rgba(226, 92, 92, 0.12);
+      --blue: #5a9ec8;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --font: "DM Sans", -apple-system, sans-serif;
+      --mono: "JetBrains Mono", monospace;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+
+    .app { display: flex; height: 100vh; }
+
+    /* ─── Sidebar ─── */
+    .sidebar {
+      width: 220px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding-top: 52px;
+      flex-shrink: 0;
+    }
+    .sidebar-header { padding: 16px 20px 20px; border-bottom: 1px solid var(--border); }
+    .sidebar-header h1 { font-size: 14px; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); text-transform: uppercase; }
+    .sidebar-header p { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .sidebar-nav { padding: 12px 10px; flex: 1; -webkit-app-region: no-drag; }
+
+    .nav-btn {
+      display: flex; align-items: center; gap: 12px; width: 100%;
+      padding: 10px 14px; border: none; background: transparent;
+      color: var(--text-secondary); font-family: var(--font);
+      font-size: 13px; font-weight: 500; border-radius: var(--radius-sm);
+      cursor: pointer; transition: all 0.15s ease; text-align: left;
+    }
+    .nav-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .nav-btn.active { background: var(--accent-glow); color: var(--accent); }
+    .nav-btn .icon {
+      width: 32px; height: 32px; display: flex; align-items: center;
+      justify-content: center; border-radius: 8px; background: var(--bg-tertiary); flex-shrink: 0;
+    }
+    .nav-btn.active .icon { background: rgba(200, 164, 90, 0.15); }
+
+    /* ─── Sidebar Settings ─── */
+    .sidebar-settings {
+      padding: 12px 14px;
+      border-top: 1px solid var(--border);
+      -webkit-app-region: no-drag;
+    }
+    .settings-title {
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 10px;
+    }
+    .setting-row {
+      margin-bottom: 10px;
+    }
+    .setting-label {
+      font-size: 11px; color: var(--text-secondary); margin-bottom: 4px;
+    }
+    .setting-select {
+      width: 100%; padding: 5px 8px; background: var(--bg-primary);
+      border: 1px solid var(--border); border-radius: 4px;
+      color: var(--text-primary); font-family: var(--font); font-size: 12px;
+      cursor: pointer; outline: none;
+      -webkit-appearance: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239997a7' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+    .setting-select option {
+      background: var(--bg-secondary); color: var(--text-primary);
+    }
+
+    /* Color swatches */
+    .color-swatches {
+      display: flex; gap: 6px;
+    }
+    .color-swatch {
+      width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent;
+      cursor: pointer; transition: all 0.15s; position: relative;
+    }
+    .color-swatch:hover { transform: scale(1.15); }
+    .color-swatch.active { border-color: var(--text-primary); }
+    .color-swatch.active::after {
+      content: ""; position: absolute; inset: 3px; border-radius: 50%;
+      border: 2px solid var(--bg-secondary);
+    }
+
+    /* ─── Sidebar Footer / Version ─── */
+    .sidebar-footer {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      -webkit-app-region: no-drag;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .version-info { font-size: 10px; color: var(--text-muted); }
+    .info-btn {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-muted); cursor: pointer; font-size: 10px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; opacity: 0;
+    }
+    .sidebar-footer:hover .info-btn { opacity: 1; }
+    .info-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+    /* ─── Main Content ─── */
+    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .titlebar {
+      height: 52px; display: flex; align-items: center;
+      padding: 0 24px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .titlebar h2 { font-size: 15px; font-weight: 600; }
+
+    .content {
+      flex: 1; overflow-y: auto; padding: 24px; -webkit-app-region: no-drag;
+    }
+    .content::-webkit-scrollbar { width: 6px; }
+    .content::-webkit-scrollbar-track { background: transparent; }
+    .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ─── Cards ─── */
+    .card {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 13px; font-weight: 600; margin-bottom: 4px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+    .card-number {
+      width: 22px; height: 22px; border-radius: 50%; background: var(--accent-glow);
+      color: var(--accent); font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 18px; border: 1px solid var(--border); background: var(--bg-tertiary);
+      color: var(--text-primary); font-family: var(--font); font-size: 13px;
+      font-weight: 500; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s;
+    }
+    .btn:hover { background: var(--bg-hover); border-color: var(--border-light); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #0f0f13; font-weight: 600; }
+    .btn-primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* ─── File Selector ─── */
+    .file-selector { display: flex; gap: 8px; align-items: center; }
+    .file-path {
+      flex: 1; padding: 9px 14px; background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-family: var(--mono); font-size: 12px;
+      color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; min-height: 38px; display: flex; align-items: center;
+    }
+    .file-path.has-value { color: var(--text-primary); }
+
+    /* ─── Select List ─── */
+    .select-list {
+      max-height: 160px; overflow-y: auto; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); background: var(--bg-primary);
+    }
+    .select-list::-webkit-scrollbar { width: 4px; }
+    .select-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .select-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; font-size: 13px;
+    }
+    .select-item:last-child { border-bottom: none; }
+    .select-item:hover { background: var(--bg-hover); }
+    .select-item.selected { background: var(--accent-glow); color: var(--accent); }
+    .select-item .dot {
+      width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--text-muted); flex-shrink: 0;
+    }
+    .select-item.selected .dot { border-color: var(--accent); background: var(--accent); }
+
+    /* ─── Toggle ─── */
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
+    .toggle-label { font-size: 13px; }
+    .toggle-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .toggle {
+      width: 42px; height: 24px; border-radius: 12px; background: var(--bg-primary);
+      border: 1px solid var(--border); position: relative; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    }
+    .toggle.on { background: var(--accent); border-color: var(--accent); }
+    .toggle::after {
+      content: ""; position: absolute; width: 18px; height: 18px; border-radius: 50%;
+      background: white; top: 2px; left: 2px; transition: transform 0.2s;
+    }
+    .toggle.on::after { transform: translateX(18px); }
+
+    /* ─── Terminal ─── */
+    .terminal {
+      background: #0a0a0e; border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px; font-family: var(--mono); font-size: 11.5px; line-height: 1.7;
+      color: var(--text-secondary); max-height: 320px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+    }
+    .terminal::-webkit-scrollbar { width: 4px; }
+    .terminal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .terminal .cmd { color: var(--blue); }
+    .terminal .ok { color: var(--green); }
+    .terminal .err { color: var(--red); }
+
+    /* ─── Status ─── */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-ok { background: var(--green-dim); color: var(--green); }
+    .badge-warn { background: rgba(200, 164, 90, 0.12); color: var(--accent); }
+
+    .deps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+    .dep-item {
+      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+      background: var(--bg-primary); border-radius: var(--radius-sm); font-family: var(--mono); font-size: 12px;
+    }
+    .dep-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dep-dot.ok { background: var(--green); }
+    .dep-dot.missing { background: var(--red); }
+
+    .empty-msg { text-align: center; padding: 24px; color: var(--text-muted); font-size: 12px; }
+
+    .running-bar {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+      background: var(--accent-glow); border: 1px solid rgba(200, 164, 90, 0.25);
+      border-radius: var(--radius); margin-bottom: 16px;
+    }
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .running-text { font-size: 13px; font-weight: 500; color: var(--accent); }
+
+    .result-banner {
+      display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+      border-radius: var(--radius); margin-bottom: 16px; font-size: 13px; font-weight: 500;
+    }
+    .result-banner.success { background: var(--green-dim); border: 1px solid rgba(92, 186, 111, 0.2); color: var(--green); }
+    .result-banner.error { background: var(--red-dim); border: 1px solid rgba(226, 92, 92, 0.2); color: var(--red); }
+
+    .mt-8 { margin-top: 8px; }
+    .mt-12 { margin-top: 12px; }
+    .flex { display: flex; }
+    .gap-8 { gap: 8px; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .page.active .card { animation: fadeIn 0.3s ease forwards; }
+    .page.active .card:nth-child(2) { animation-delay: 0.05s; }
+    .page.active .card:nth-child(3) { animation-delay: 0.1s; }
+    .page.active .card:nth-child(4) { animation-delay: 0.15s; }
+    .page.active .card:nth-child(5) { animation-delay: 0.2s; }
+
+    /* ─── Credits ─── */
+    .credits-section { text-align: center; padding: 40px 20px; }
+    .credits-section h3 { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    .credits-section .credits-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 32px; }
+    .credits-grid { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
+    .credit-card {
+      background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px 28px; min-width: 140px; text-align: center; transition: border-color 0.2s;
+    }
+    .credit-card:hover { border-color: var(--accent-dim); }
+    .credit-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .credit-role { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .credits-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--accent); font-size: 13px; font-weight: 500;
+      text-decoration: none; padding: 10px 20px;
+      border: 1px solid var(--accent-dim); border-radius: var(--radius-sm);
+      transition: all 0.15s; cursor: pointer;
+    }
+    .credits-link:hover { background: var(--accent-glow); }
+
+    /* ─── Modal ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; -webkit-app-region: no-drag;
+      animation: fadeInModal 0.15s ease;
+    }
+    @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+    .modal {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; width: 480px; max-width: 90vw;
+      max-height: 80vh; overflow-y: auto; box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+      animation: slideUp 0.2s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;
+    }
+    .modal-title { font-size: 15px; font-weight: 600; }
+    .modal-close {
+      width: 28px; height: 28px; border: none; background: transparent;
+      color: var(--text-muted); font-size: 20px; cursor: pointer;
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .modal-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- ═══ Sidebar ═══ -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>HibyOS</h1>
+        <p>Firmware Toolbox</p>
+      </div>
+      <div class="sidebar-nav">
+        <button class="nav-btn active" data-page="firmware" onclick="switchPage('firmware')">
+          <div class="icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="3" y="4" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="6" y="7" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+              <rect x="10" y="7" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.5"/>
+              <line x1="5" y1="4" x2="5" y2="2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="9" y1="4" x2="9" y2="2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <line x1="13" y1="4" x2="13" y2="2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span data-i18n="nav.firmware">Firmware Modder</span>
+        </button>
+        <button class="nav-btn" data-page="database" onclick="switchPage('database')">
+          <div class="icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <ellipse cx="9" cy="5.5" rx="6" ry="2.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M3 5.5v3.5c0 1.38 2.69 2.5 6 2.5s6-1.12 6-2.5V5.5" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M3 9v3.5c0 1.38 2.69 2.5 6 2.5s6-1.12 6-2.5V9" stroke="currentColor" stroke-width="1.3"/>
+            </svg>
+          </div>
+          <span data-i18n="nav.database">Database Updater</span>
+        </button>
+      </div>
+
+      <!-- ═══ Settings ═══ -->
+      <div class="sidebar-settings">
+        <div class="settings-title" data-i18n="settings.title">SETTINGS</div>
+        <div class="setting-row">
+          <div class="setting-label" data-i18n="settings.language">Language</div>
+          <select class="setting-select" id="lang-select" onchange="setLang(this.value)">
+            <option value="en">English</option>
+            <option value="it">Italiano</option>
+            <option value="de">Deutsch</option>
+            <option value="fr">Français</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label" data-i18n="settings.accent">Accent color</div>
+          <div class="color-swatches">
+            <div class="color-swatch active" style="background:#c8a45a" onclick="setAccent('gold')" title="Gold"></div>
+            <div class="color-swatch" style="background:#42817C" onclick="setAccent('teal')" title="Teal"></div>
+            <div class="color-swatch" style="background:#B96C35" onclick="setAccent('copper')" title="Copper"></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <button class="btn btn-sm" style="width:100%;justify-content:center;" onclick="openDepsModal()">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/><line x1="7" y1="6" x2="7" y2="10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="4" r="0.8" fill="currentColor"/></svg>
+            <span data-i18n="deps.btn">Check dependencies</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ═══ Footer / Version ═══ -->
+      <div class="sidebar-footer">
+        <div class="version-info">v1.0.0</div>
+        <button class="info-btn" onclick="switchPage('credits')" title="Credits">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <circle cx="5" cy="5" r="4.2" stroke="currentColor" stroke-width="1.1"/>
+            <line x1="5" y1="4.5" x2="5" y2="7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="5" cy="3" r="0.6" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ Main ═══ -->
+    <div class="main">
+      <div class="titlebar">
+        <h2 id="page-title">Firmware Modder</h2>
+      </div>
+
+      <div class="content">
+
+        <!-- ═══ PAGE: FIRMWARE ═══ -->
+        <div id="page-firmware" class="page active">
+          <div class="card">
+            <div class="card-title"><span class="card-number">1</span> <span data-i18n="fw.step1.title">Project Folder</span></div>
+            <div class="card-desc" data-i18n="fw.step1.desc">Select the main project folder (must contain Firmware, Binaries, Themes subfolders).</div>
+            <div class="file-selector">
+              <div class="file-path" id="fw-project-path" data-i18n="fw.noFolder">No folder selected</div>
+              <button class="btn btn-sm" onclick="pickProjectDir()" data-i18n="fw.browse">Browse…</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="card-number">2</span> <span data-i18n="fw.step2.title">Base Firmware (.upt)</span></div>
+            <div class="card-desc" data-i18n="fw.step2.desc">Select the base firmware to modify.</div>
+            <div id="fw-list" class="select-list"><div class="empty-msg" data-i18n="fw.step2.empty">Select the project folder first</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="card-number">3</span> <span data-i18n="fw.step3.title">Patched Binary (optional)</span></div>
+            <div class="card-desc" data-i18n="fw.step3.desc">Replace hiby_player with a patched version.</div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label" data-i18n="fw.step3.toggle">Apply patched binary</div>
+                <div class="toggle-sub" data-i18n="fw.step3.sub">From Binaries/ folder</div>
+              </div>
+              <div class="toggle" id="fw-bin-toggle" onclick="toggleBin()"></div>
+            </div>
+            <div id="fw-bin-list" class="select-list" style="display:none;"><div class="empty-msg" data-i18n="fw.step3.empty">No binaries found</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="card-number">4</span> <span data-i18n="fw.step4.title">Custom Theme (optional)</span></div>
+            <div class="card-desc" data-i18n="fw.step4.desc">Apply a theme from the Themes/ folder.</div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label" data-i18n="fw.step4.toggle">Apply theme</div>
+                <div class="toggle-sub" data-i18n="fw.step4.sub">From Themes/ folder</div>
+              </div>
+              <div class="toggle" id="fw-theme-toggle" onclick="toggleTheme()"></div>
+            </div>
+            <div id="fw-theme-list" class="select-list" style="display:none;"><div class="empty-msg" data-i18n="fw.step4.empty">No themes found</div></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="card-number">5</span> <span data-i18n="fw.step5.title">Generate Firmware</span></div>
+            <div class="card-desc" data-i18n="fw.step5.desc">Start the repack process. The r3proii.upt file will be generated in the project folder.</div>
+            <div id="fw-result"></div>
+            <div id="fw-running" style="display:none;" class="running-bar">
+              <div class="spinner"></div>
+              <span class="running-text" data-i18n="fw.running">Generating…</span>
+            </div>
+            <div class="flex gap-8">
+              <button class="btn btn-primary" id="fw-run-btn" onclick="runFirmwareMod()" disabled>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 2v10l9-5-9-5z" fill="currentColor"/></svg>
+                <span data-i18n="fw.step5.btn">Generate Firmware</span>
+              </button>
+              <button class="btn btn-sm" id="fw-open-btn" style="display:none;" onclick="openFwOutput()" data-i18n="fw.openFolder">Open folder</button>
+            </div>
+            <div id="fw-terminal" class="terminal mt-12" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- ═══ PAGE: DATABASE ═══ -->
+        <div id="page-database" class="page">
+          <div class="card">
+            <div class="card-title"><span class="card-number">1</span> <span data-i18n="db.step1.title">SD Card</span></div>
+            <div class="card-desc" data-i18n="db.step1.desc">Select the SD card root of your HiBy DAP. Must contain the usrlocal_media.db file.</div>
+            <div class="file-selector">
+              <div class="file-path" id="db-sd-path" data-i18n="db.noPath">No path selected</div>
+              <button class="btn btn-sm" onclick="pickSdCard()" data-i18n="fw.browse">Browse…</button>
+            </div>
+            <div id="db-sd-status" class="mt-8"></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="card-number">2</span> <span data-i18n="db.step2.title">Options</span></div>
+            <div class="card-desc" data-i18n="db.step2.desc">Configure options for the music database update.</div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label" data-i18n="db.embed.label">Embed album art (360×360)</div>
+                <div class="toggle-sub" data-i18n="db.embed.sub">Resize and embed cover art into audio files</div>
+              </div>
+              <div class="toggle on" id="db-embed-toggle" onclick="toggleEmbed()"></div>
+            </div>
+            <div class="toggle-row" style="border-top: 1px solid var(--border); padding-top: 12px;">
+              <div>
+                <div class="toggle-label" data-i18n="db.resize.label">Resize folder cover images</div>
+                <div class="toggle-sub" data-i18n="db.resize.sub">Resize cover.jpg, folder.jpg etc. to 360×360</div>
+              </div>
+              <div class="toggle" id="db-resize-toggle" onclick="toggleResize()"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><span class="card-number">3</span> <span data-i18n="db.step3.title">Update Database</span></div>
+            <div class="card-desc" data-i18n="db.step3.desc">Scan the SD card, read audio tags and rebuild usrlocal_media.db.</div>
+            <div id="db-result"></div>
+            <div id="db-running" style="display:none;" class="running-bar">
+              <div class="spinner"></div>
+              <span class="running-text" data-i18n="db.running">Updating…</span>
+            </div>
+            <button class="btn btn-primary" id="db-run-btn" onclick="runDbUpdate()" disabled>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 2v10l9-5-9-5z" fill="currentColor"/></svg>
+              <span data-i18n="db.step3.btn">Update Database</span>
+            </button>
+            <div id="db-terminal" class="terminal mt-12" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- ═══ PAGE: CREDITS ═══ -->
+        <div id="page-credits" class="page">
+          <div class="credits-section">
+            <h3>HibyOS Toolbox</h3>
+            <div class="credits-sub" data-i18n="credits.sub">Firmware modding tools for HibyOS DAPs</div>
+            <div class="credits-grid">
+              <div class="credit-card" onclick="window.api.openExternal('https://github.com/Jepl4r')" style="cursor:pointer">
+                <div class="credit-name">Jepl4r</div>
+                <div class="credit-role">Developer</div>
+              </div>
+              <div class="credit-card" onclick="window.api.openExternal('https://github.com/noisetta')" style="cursor:pointer">
+                <div class="credit-name">noisetta</div>
+                <div class="credit-role">Developer</div>
+              </div>
+              <div class="credit-card" onclick="window.api.openExternal('https://github.com/tartarus6')" style="cursor:pointer">
+                <div class="credit-name">Tartarus6</div>
+                <div class="credit-role">Developer</div>
+              </div>
+            </div>
+            <a class="credits-link" onclick="window.api.openExternal('https://github.com/hiby-modding')">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M9 1.5C4.86 1.5 1.5 4.86 1.5 9c0 3.31 2.15 6.12 5.13 7.11.38.07.52-.16.52-.36v-1.26c-2.09.45-2.53-1.01-2.53-1.01-.34-.87-.83-1.1-.83-1.1-.68-.46.05-.45.05-.45.75.05 1.15.77 1.15.77.67 1.14 1.75.81 2.17.62.07-.48.26-.81.47-.99-1.67-.19-3.42-.83-3.42-3.71 0-.82.29-1.49.77-2.01-.08-.19-.33-.95.07-1.98 0 0 .63-.2 2.06.77a7.18 7.18 0 013.74 0c1.43-.97 2.06-.77 2.06-.77.4 1.03.15 1.79.07 1.98.48.53.77 1.2.77 2.01 0 2.89-1.76 3.52-3.43 3.71.27.23.51.69.51 1.39v2.07c0 .2.14.43.52.36A7.5 7.5 0 0016.5 9c0-4.14-3.36-7.5-7.5-7.5z" fill="currentColor"/>
+              </svg>
+              github.com/hiby-modding
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Dependencies Modal ═══ -->
+  <div id="deps-modal" class="modal-overlay" style="display:none;" onclick="closeDepsModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="deps.title">Dependencies</div>
+        <button class="modal-close" onclick="closeDepsModal()">&times;</button>
+      </div>
+      <div class="modal-desc" data-i18n="deps.desc">Status of the tools required by the scripts.</div>
+      <div id="deps-grid" class="deps-grid">
+        <div class="empty-msg" data-i18n="deps.empty">Click "Check" to verify</div>
+      </div>
+      <div id="deps-platform" class="mt-8" style="font-size:11px;color:var(--text-muted);"></div>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════
+    // ACCENT COLORS
+    // ═══════════════════════════════════════════════
+    const ACCENTS = {
+      gold:   { accent: "#c8a45a", dim: "#a08040", glow: "rgba(200,164,90,0.15)" },
+      teal:   { accent: "#42817C", dim: "#356863", glow: "rgba(66,129,124,0.15)" },
+      copper: { accent: "#B96C35", dim: "#945628", glow: "rgba(185,108,53,0.15)" },
+    };
+
+    let currentAccent = "gold";
+    try { currentAccent = localStorage.getItem("accent") || "gold"; } catch {}
+
+    function setAccent(name) {
+      currentAccent = name;
+      try { localStorage.setItem("accent", name); } catch {}
+      const c = ACCENTS[name];
+      document.documentElement.style.setProperty("--accent", c.accent);
+      document.documentElement.style.setProperty("--accent-dim", c.dim);
+      document.documentElement.style.setProperty("--accent-glow", c.glow);
+      document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".color-swatch")[["gold","teal","copper"].indexOf(name)].classList.add("active");
+    }
+
+    // ═══════════════════════════════════════════════
+    // i18n — 5 languages
+    // ═══════════════════════════════════════════════
+    const I18N = {
+      en: {
+        "nav.firmware": "Firmware Modder", "nav.database": "Database Updater",
+        "settings.title": "SETTINGS", "settings.language": "Language", "settings.accent": "Accent color",
+        "fw.step1.title": "Project Folder",
+        "fw.step1.desc": "Select the main project folder (must contain Firmware, Binaries, Themes subfolders).",
+        "fw.noFolder": "No folder selected", "fw.browse": "Browse…",
+        "fw.step2.title": "Base Firmware (.upt)", "fw.step2.desc": "Select the base firmware to modify.",
+        "fw.step2.empty": "Select the project folder first", "fw.step2.noFiles": "No .upt files found in Firmware/",
+        "fw.step3.title": "Patched Binary (optional)", "fw.step3.desc": "Replace hiby_player with a patched version.",
+        "fw.step3.toggle": "Apply patched binary", "fw.step3.sub": "From Binaries/ folder", "fw.step3.empty": "No binaries found",
+        "fw.step4.title": "Custom Theme (optional)", "fw.step4.desc": "Apply a theme from the Themes/ folder.",
+        "fw.step4.toggle": "Apply theme", "fw.step4.sub": "From Themes/ folder", "fw.step4.empty": "No themes found",
+        "fw.step5.title": "Generate Firmware",
+        "fw.step5.desc": "Start the repack process. The r3proii.upt file will be generated in the project folder.",
+        "fw.step5.btn": "Generate Firmware", "fw.running": "Generating…",
+        "fw.openFolder": "Open folder", "fw.success": "✅ Firmware generated successfully!",
+        "db.step1.title": "SD Card",
+        "db.step1.desc": "Select the SD card root of your HiBy DAP. Must contain the usrlocal_media.db file.",
+        "db.noPath": "No path selected",
+        "db.step2.title": "Options", "db.step2.desc": "Configure options for the music database update.",
+        "db.embed.label": "Embed album art (360×360)", "db.embed.sub": "Resize and embed cover art into audio files",
+        "db.resize.label": "Resize folder cover images", "db.resize.sub": "Resize cover.jpg, folder.jpg etc. to 360×360",
+        "db.step3.title": "Update Database", "db.step3.desc": "Scan the SD card, read audio tags and rebuild usrlocal_media.db.",
+        "db.step3.btn": "Update Database", "db.running": "Updating…", "db.success": "✅ Database updated successfully!",
+        "db.dbFound": "✓ usrlocal_media.db found", "db.dbNotFound": "⚠ usrlocal_media.db not found — script will search for it",
+        "deps.title": "Dependencies", "deps.desc": "Status of the tools required by the scripts.",
+        "deps.empty": "Click \"Check\" to verify", "deps.btn": "Check dependencies",
+        "deps.bundled": "bundled", "deps.system": "system", "deps.installed": "installed", "deps.missing": "missing",
+        "credits.sub": "Firmware modding tools for HibyOS DAPs",
+        "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Credits",
+      },
+      it: {
+        "nav.firmware": "Firmware Modder", "nav.database": "Database Updater",
+        "settings.title": "IMPOSTAZIONI", "settings.language": "Lingua", "settings.accent": "Colore accento",
+        "fw.step1.title": "Cartella Progetto",
+        "fw.step1.desc": "Seleziona la cartella principale del progetto (deve contenere le sottocartelle Firmware, Binaries, Themes).",
+        "fw.noFolder": "Nessuna cartella selezionata", "fw.browse": "Sfoglia…",
+        "fw.step2.title": "Firmware Base (.upt)", "fw.step2.desc": "Seleziona il firmware base da modificare.",
+        "fw.step2.empty": "Seleziona prima la cartella del progetto", "fw.step2.noFiles": "Nessun file .upt trovato in Firmware/",
+        "fw.step3.title": "Binario Patchato (opzionale)", "fw.step3.desc": "Sostituisci hiby_player con una versione patchata.",
+        "fw.step3.toggle": "Applica binario patchato", "fw.step3.sub": "Dalla cartella Binaries/", "fw.step3.empty": "Nessuna binario trovato",
+        "fw.step4.title": "Tema Personalizzato (opzionale)", "fw.step4.desc": "Applica un tema dalla cartella Themes/.",
+        "fw.step4.toggle": "Applica tema", "fw.step4.sub": "Dalla cartella Themes/", "fw.step4.empty": "Nessun tema trovato",
+        "fw.step5.title": "Genera Firmware",
+        "fw.step5.desc": "Avvia il processo di repack. Il file r3proii.upt verrà generato nella cartella del progetto.",
+        "fw.step5.btn": "Genera Firmware", "fw.running": "Generazione in corso…",
+        "fw.openFolder": "Apri cartella", "fw.success": "✅ Firmware generato con successo!",
+        "db.step1.title": "SD Card",
+        "db.step1.desc": "Seleziona la root della SD card del tuo DAP HiBy. Deve contenere il file usrlocal_media.db.",
+        "db.noPath": "Nessun percorso selezionato",
+        "db.step2.title": "Opzioni", "db.step2.desc": "Configura le opzioni per l'aggiornamento del database musicale.",
+        "db.embed.label": "Embed album art (360×360)", "db.embed.sub": "Ridimensiona e incorpora le copertine nei file audio",
+        "db.resize.label": "Ridimensiona cover delle cartelle", "db.resize.sub": "Ridimensiona cover.jpg, folder.jpg ecc. a 360×360",
+        "db.step3.title": "Aggiorna Database", "db.step3.desc": "Scansiona la SD card, legge i tag audio e ricostruisce usrlocal_media.db.",
+        "db.step3.btn": "Aggiorna Database", "db.running": "Aggiornamento in corso…", "db.success": "✅ Database aggiornato con successo!",
+        "db.dbFound": "✓ usrlocal_media.db trovato", "db.dbNotFound": "⚠ usrlocal_media.db non trovato — verrà cercato dallo script",
+        "deps.title": "Dipendenze", "deps.desc": "Lo stato dei tool necessari per il funzionamento degli script.",
+        "deps.empty": "Clicca \"Verifica\" per controllare", "deps.btn": "Verifica dipendenze",
+        "deps.bundled": "incluso nell'app", "deps.system": "di sistema", "deps.installed": "installato", "deps.missing": "mancante",
+        "credits.sub": "Firmware modding tools per HibyOS DAPs",
+        "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Crediti",
+      },
+      de: {
+        "nav.firmware": "Firmware Modder", "nav.database": "Datenbank Updater",
+        "settings.title": "EINSTELLUNGEN", "settings.language": "Sprache", "settings.accent": "Akzentfarbe",
+        "fw.step1.title": "Projektordner",
+        "fw.step1.desc": "Wähle den Hauptprojektordner (muss die Unterordner Firmware, Binaries, Themes enthalten).",
+        "fw.noFolder": "Kein Ordner ausgewählt", "fw.browse": "Durchsuchen…",
+        "fw.step2.title": "Basis-Firmware (.upt)", "fw.step2.desc": "Wähle die zu modifizierende Basis-Firmware.",
+        "fw.step2.empty": "Wähle zuerst den Projektordner", "fw.step2.noFiles": "Keine .upt-Dateien in Firmware/ gefunden",
+        "fw.step3.title": "Gepatchte Binary (optional)", "fw.step3.desc": "Ersetze hiby_player durch eine gepatchte Version.",
+        "fw.step3.toggle": "Gepatchte Binary anwenden", "fw.step3.sub": "Aus dem Binaries/-Ordner", "fw.step3.empty": "Keine Binaries gefunden",
+        "fw.step4.title": "Benutzerdefiniertes Theme (optional)", "fw.step4.desc": "Wende ein Theme aus dem Themes/-Ordner an.",
+        "fw.step4.toggle": "Theme anwenden", "fw.step4.sub": "Aus dem Themes/-Ordner", "fw.step4.empty": "Keine Themes gefunden",
+        "fw.step5.title": "Firmware generieren",
+        "fw.step5.desc": "Starte den Repack-Prozess. Die Datei r3proii.upt wird im Projektordner erzeugt.",
+        "fw.step5.btn": "Firmware generieren", "fw.running": "Wird generiert…",
+        "fw.openFolder": "Ordner öffnen", "fw.success": "✅ Firmware erfolgreich generiert!",
+        "db.step1.title": "SD-Karte",
+        "db.step1.desc": "Wähle das Stammverzeichnis der SD-Karte deines HiBy DAP. Muss usrlocal_media.db enthalten.",
+        "db.noPath": "Kein Pfad ausgewählt",
+        "db.step2.title": "Optionen", "db.step2.desc": "Konfiguriere die Optionen für das Datenbank-Update.",
+        "db.embed.label": "Album-Cover einbetten (360×360)", "db.embed.sub": "Cover in Audiodateien einbetten",
+        "db.resize.label": "Ordner-Cover skalieren", "db.resize.sub": "cover.jpg, folder.jpg usw. auf 360×360 skalieren",
+        "db.step3.title": "Datenbank aktualisieren", "db.step3.desc": "SD-Karte scannen, Audio-Tags lesen und usrlocal_media.db neu aufbauen.",
+        "db.step3.btn": "Datenbank aktualisieren", "db.running": "Wird aktualisiert…", "db.success": "✅ Datenbank erfolgreich aktualisiert!",
+        "db.dbFound": "✓ usrlocal_media.db gefunden", "db.dbNotFound": "⚠ usrlocal_media.db nicht gefunden — Skript sucht danach",
+        "deps.title": "Abhängigkeiten", "deps.desc": "Status der benötigten Tools.",
+        "deps.empty": "Klicke \"Prüfen\" zum Verifizieren", "deps.btn": "Abhängigkeiten prüfen",
+        "deps.bundled": "gebündelt", "deps.system": "System", "deps.installed": "installiert", "deps.missing": "fehlt",
+        "credits.sub": "Firmware-Modding-Tools für HibyOS DAPs",
+        "title.firmware": "Firmware Modder", "title.database": "Datenbank Updater", "title.credits": "Credits",
+      },
+      fr: {
+        "nav.firmware": "Firmware Modder", "nav.database": "Mise à jour BDD",
+        "settings.title": "PARAMÈTRES", "settings.language": "Langue", "settings.accent": "Couleur d'accent",
+        "fw.step1.title": "Dossier du projet",
+        "fw.step1.desc": "Sélectionnez le dossier principal du projet (doit contenir les sous-dossiers Firmware, Binaries, Themes).",
+        "fw.noFolder": "Aucun dossier sélectionné", "fw.browse": "Parcourir…",
+        "fw.step2.title": "Firmware de base (.upt)", "fw.step2.desc": "Sélectionnez le firmware de base à modifier.",
+        "fw.step2.empty": "Sélectionnez d'abord le dossier du projet", "fw.step2.noFiles": "Aucun fichier .upt trouvé dans Firmware/",
+        "fw.step3.title": "Binaire patché (optionnel)", "fw.step3.desc": "Remplacer hiby_player par une version patchée.",
+        "fw.step3.toggle": "Appliquer le binaire patché", "fw.step3.sub": "Depuis le dossier Binaries/", "fw.step3.empty": "Aucun binaire trouvé",
+        "fw.step4.title": "Thème personnalisé (optionnel)", "fw.step4.desc": "Appliquer un thème depuis le dossier Themes/.",
+        "fw.step4.toggle": "Appliquer le thème", "fw.step4.sub": "Depuis le dossier Themes/", "fw.step4.empty": "Aucun thème trouvé",
+        "fw.step5.title": "Générer le firmware",
+        "fw.step5.desc": "Lancer le processus de repack. Le fichier r3proii.upt sera généré dans le dossier du projet.",
+        "fw.step5.btn": "Générer le firmware", "fw.running": "Génération en cours…",
+        "fw.openFolder": "Ouvrir le dossier", "fw.success": "✅ Firmware généré avec succès !",
+        "db.step1.title": "Carte SD",
+        "db.step1.desc": "Sélectionnez la racine de la carte SD de votre DAP HiBy. Doit contenir usrlocal_media.db.",
+        "db.noPath": "Aucun chemin sélectionné",
+        "db.step2.title": "Options", "db.step2.desc": "Configurer les options de mise à jour de la base de données musicale.",
+        "db.embed.label": "Intégrer les pochettes (360×360)", "db.embed.sub": "Redimensionner et intégrer les pochettes dans les fichiers audio",
+        "db.resize.label": "Redimensionner les images de dossier", "db.resize.sub": "Redimensionner cover.jpg, folder.jpg etc. à 360×360",
+        "db.step3.title": "Mettre à jour la BDD", "db.step3.desc": "Scanner la carte SD, lire les tags audio et reconstruire usrlocal_media.db.",
+        "db.step3.btn": "Mettre à jour la BDD", "db.running": "Mise à jour en cours…", "db.success": "✅ Base de données mise à jour avec succès !",
+        "db.dbFound": "✓ usrlocal_media.db trouvé", "db.dbNotFound": "⚠ usrlocal_media.db non trouvé — le script le cherchera",
+        "deps.title": "Dépendances", "deps.desc": "État des outils requis par les scripts.",
+        "deps.empty": "Cliquez \"Vérifier\" pour contrôler", "deps.btn": "Vérifier les dépendances",
+        "deps.bundled": "inclus", "deps.system": "système", "deps.installed": "installé", "deps.missing": "manquant",
+        "credits.sub": "Outils de modding firmware pour HibyOS DAPs",
+        "title.firmware": "Firmware Modder", "title.database": "Mise à jour BDD", "title.credits": "Crédits",
+      },
+      es: {
+        "nav.firmware": "Firmware Modder", "nav.database": "Actualizar BD",
+        "settings.title": "AJUSTES", "settings.language": "Idioma", "settings.accent": "Color de acento",
+        "fw.step1.title": "Carpeta del proyecto",
+        "fw.step1.desc": "Selecciona la carpeta principal del proyecto (debe contener las subcarpetas Firmware, Binaries, Themes).",
+        "fw.noFolder": "Ninguna carpeta seleccionada", "fw.browse": "Examinar…",
+        "fw.step2.title": "Firmware base (.upt)", "fw.step2.desc": "Selecciona el firmware base a modificar.",
+        "fw.step2.empty": "Selecciona primero la carpeta del proyecto", "fw.step2.noFiles": "No se encontraron archivos .upt en Firmware/",
+        "fw.step3.title": "Binario parcheado (opcional)", "fw.step3.desc": "Reemplazar hiby_player con una versión parcheada.",
+        "fw.step3.toggle": "Aplicar binario parcheado", "fw.step3.sub": "Desde la carpeta Binaries/", "fw.step3.empty": "No se encontraron binarios",
+        "fw.step4.title": "Tema personalizado (opcional)", "fw.step4.desc": "Aplicar un tema desde la carpeta Themes/.",
+        "fw.step4.toggle": "Aplicar tema", "fw.step4.sub": "Desde la carpeta Themes/", "fw.step4.empty": "No se encontraron temas",
+        "fw.step5.title": "Generar firmware",
+        "fw.step5.desc": "Iniciar el proceso de repack. El archivo r3proii.upt se generará en la carpeta del proyecto.",
+        "fw.step5.btn": "Generar firmware", "fw.running": "Generando…",
+        "fw.openFolder": "Abrir carpeta", "fw.success": "✅ ¡Firmware generado con éxito!",
+        "db.step1.title": "Tarjeta SD",
+        "db.step1.desc": "Selecciona la raíz de la tarjeta SD de tu DAP HiBy. Debe contener usrlocal_media.db.",
+        "db.noPath": "Ninguna ruta seleccionada",
+        "db.step2.title": "Opciones", "db.step2.desc": "Configura las opciones para la actualización de la base de datos musical.",
+        "db.embed.label": "Incrustar carátula (360×360)", "db.embed.sub": "Redimensionar e incrustar carátulas en archivos de audio",
+        "db.resize.label": "Redimensionar imágenes de carpeta", "db.resize.sub": "Redimensionar cover.jpg, folder.jpg etc. a 360×360",
+        "db.step3.title": "Actualizar base de datos", "db.step3.desc": "Escanear la tarjeta SD, leer etiquetas de audio y reconstruir usrlocal_media.db.",
+        "db.step3.btn": "Actualizar BD", "db.running": "Actualizando…", "db.success": "✅ ¡Base de datos actualizada con éxito!",
+        "db.dbFound": "✓ usrlocal_media.db encontrado", "db.dbNotFound": "⚠ usrlocal_media.db no encontrado — el script lo buscará",
+        "deps.title": "Dependencias", "deps.desc": "Estado de las herramientas requeridas por los scripts.",
+        "deps.empty": "Haz clic en \"Verificar\" para comprobar", "deps.btn": "Verificar dependencias",
+        "deps.bundled": "incluido", "deps.system": "sistema", "deps.installed": "instalado", "deps.missing": "falta",
+        "credits.sub": "Herramientas de modding de firmware para HibyOS DAPs",
+        "title.firmware": "Firmware Modder", "title.database": "Actualizar BD", "title.credits": "Créditos",
+      }
+    };
+
+    let currentLang = "en";
+    try { currentLang = localStorage.getItem("lang") || "en"; } catch {}
+
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+    }
+
+    function applyLang() {
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        el.textContent = t(key);
+      });
+      const activePage = document.querySelector(".nav-btn.active");
+      if (activePage) {
+        const page = activePage.getAttribute("data-page");
+        document.getElementById("page-title").textContent = t(`title.${page}`);
+      }
+      document.getElementById("lang-select").value = currentLang;
+    }
+
+    function setLang(lang) {
+      currentLang = lang;
+      try { localStorage.setItem("lang", lang); } catch {}
+      applyLang();
+    }
+
+    // ═══════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════
+    const state = {
+      projectDir: null, selectedUpt: null,
+      useBinary: false, selectedBinary: null, binaryPaths: [],
+      useTheme: false, selectedTheme: null, themePaths: [],
+      fwRunning: false, fwOutputPath: null,
+      sdPath: null, sdHasDb: false,
+      embedArt: true, resizeCovers: false, dbRunning: false,
+    };
+
+    // ═══════════════════════════════════════════════
+    // NAVIGATION
+    // ═══════════════════════════════════════════════
+    function switchPage(page) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(`page-${page}`).classList.add("active");
+      // Don't highlight credits in nav (it has no nav button)
+      if (page !== "credits") {
+        document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+        const btn = document.querySelector(`.nav-btn[data-page="${page}"]`);
+        if (btn) btn.classList.add("active");
+      }
+      document.getElementById("page-title").textContent = t(`title.${page}`);
+    }
+
+    // ═══════════════════════════════════════════════
+    // FIRMWARE MODDER
+    // ═══════════════════════════════════════════════
+    async function pickProjectDir() {
+      const dir = await window.api.pickFolder(t("fw.step1.title"));
+      if (!dir) return;
+      state.projectDir = dir;
+      const el = document.getElementById("fw-project-path");
+      el.textContent = dir; el.classList.add("has-value");
+
+      const files = await window.api.listFiles(dir + "/Firmware", ".upt");
+      const list = document.getElementById("fw-list");
+      if (files.length === 0) {
+        list.innerHTML = `<div class="empty-msg">${t("fw.step2.noFiles")}</div>`;
+      } else {
+        list.innerHTML = files.map(f =>
+          `<div class="select-item" onclick="selectUpt('${f.replace(/'/g,"\\'")}', this)"><span class="dot"></span>${f}</div>`
+        ).join("");
+      }
+      await loadBinaries(dir);
+      await loadThemes(dir);
+      updateFwRunBtn();
+    }
+
+    function selectUpt(name, el) {
+      state.selectedUpt = name;
+      document.querySelectorAll("#fw-list .select-item").forEach(e => e.classList.remove("selected"));
+      el.classList.add("selected");
+      updateFwRunBtn();
+    }
+
+    async function loadBinaries(projectDir) {
+      const results = await window.api.findBinaries(projectDir + "/Binaries");
+      state.binaryPaths = results.map(r => r.path);
+      const list = document.getElementById("fw-bin-list");
+      if (results.length === 0) {
+        list.innerHTML = `<div class="empty-msg">${t("fw.step3.empty")}</div>`;
+      } else {
+        list.innerHTML = results.map((r, i) =>
+          `<div class="select-item" onclick="selectBinary(${i}, this)"><span class="dot"></span>${r.name}</div>`
+        ).join("");
+      }
+    }
+
+    function selectBinary(idx, el) {
+      state.selectedBinary = state.binaryPaths[idx];
+      document.querySelectorAll("#fw-bin-list .select-item").forEach(e => e.classList.remove("selected"));
+      el.classList.add("selected");
+    }
+
+    async function loadThemes(projectDir) {
+      const results = await window.api.findThemes(projectDir + "/Themes");
+      state.themePaths = results.map(r => r.path);
+      const list = document.getElementById("fw-theme-list");
+      if (results.length === 0) {
+        list.innerHTML = `<div class="empty-msg">${t("fw.step4.empty")}</div>`;
+      } else {
+        list.innerHTML = results.map((r, i) =>
+          `<div class="select-item" onclick="selectTheme(${i}, this)"><span class="dot"></span>${r.name}</div>`
+        ).join("");
+      }
+    }
+
+    function selectTheme(idx, el) {
+      state.selectedTheme = state.themePaths[idx];
+      document.querySelectorAll("#fw-theme-list .select-item").forEach(e => e.classList.remove("selected"));
+      el.classList.add("selected");
+    }
+
+    function toggleBin() {
+      state.useBinary = !state.useBinary;
+      document.getElementById("fw-bin-toggle").classList.toggle("on", state.useBinary);
+      document.getElementById("fw-bin-list").style.display = state.useBinary ? "" : "none";
+      if (!state.useBinary) state.selectedBinary = null;
+    }
+    function toggleTheme() {
+      state.useTheme = !state.useTheme;
+      document.getElementById("fw-theme-toggle").classList.toggle("on", state.useTheme);
+      document.getElementById("fw-theme-list").style.display = state.useTheme ? "" : "none";
+      if (!state.useTheme) state.selectedTheme = null;
+    }
+    function updateFwRunBtn() {
+      document.getElementById("fw-run-btn").disabled = !(state.projectDir && state.selectedUpt && !state.fwRunning);
+    }
+
+    async function runFirmwareMod() {
+      state.fwRunning = true; updateFwRunBtn();
+      document.getElementById("fw-running").style.display = "";
+      document.getElementById("fw-result").innerHTML = "";
+      document.getElementById("fw-open-btn").style.display = "none";
+      const terminal = document.getElementById("fw-terminal");
+      terminal.style.display = ""; terminal.innerHTML = "";
+
+      const cleanup = window.api.onFwLog(msg => {
+        const line = document.createElement("div");
+        if (msg.startsWith("$")) line.className = "cmd";
+        else if (msg.includes("✅")) line.className = "ok";
+        else if (msg.includes("❌") || msg.includes("ERROR")) line.className = "err";
+        line.textContent = msg; terminal.appendChild(line);
+        terminal.scrollTop = terminal.scrollHeight;
+      });
+
+      const result = await window.api.runFirmwareMod({
+        projectDir: state.projectDir, uptFile: state.selectedUpt,
+        binaryPath: state.useBinary ? state.selectedBinary : null,
+        themePath: state.useTheme ? state.selectedTheme : null,
+      });
+
+      cleanup(); state.fwRunning = false;
+      document.getElementById("fw-running").style.display = "none"; updateFwRunBtn();
+      const resultDiv = document.getElementById("fw-result");
+      if (result.success) {
+        state.fwOutputPath = result.outputPath;
+        resultDiv.innerHTML = `<div class="result-banner success">${t("fw.success")}</div>`;
+        document.getElementById("fw-open-btn").style.display = "";
+      } else {
+        resultDiv.innerHTML = `<div class="result-banner error">❌ ${result.error}</div>`;
+      }
+    }
+
+    function openFwOutput() { if (state.fwOutputPath) window.api.openFolder(state.fwOutputPath); }
+
+    // ═══════════════════════════════════════════════
+    // DATABASE UPDATER
+    // ═══════════════════════════════════════════════
+    async function pickSdCard() {
+      const dir = await window.api.pickFolder(t("db.step1.title"));
+      if (!dir) return;
+      state.sdPath = dir;
+      const el = document.getElementById("db-sd-path");
+      el.textContent = dir; el.classList.add("has-value");
+      const hasDb = await window.api.pathExists(dir + "/usrlocal_media.db");
+      state.sdHasDb = hasDb;
+      document.getElementById("db-sd-status").innerHTML = hasDb
+        ? `<span class="badge badge-ok">${t("db.dbFound")}</span>`
+        : `<span class="badge badge-warn">${t("db.dbNotFound")}</span>`;
+      updateDbRunBtn();
+    }
+
+    function toggleEmbed() {
+      state.embedArt = !state.embedArt;
+      document.getElementById("db-embed-toggle").classList.toggle("on", state.embedArt);
+    }
+    function toggleResize() {
+      state.resizeCovers = !state.resizeCovers;
+      document.getElementById("db-resize-toggle").classList.toggle("on", state.resizeCovers);
+    }
+    function updateDbRunBtn() {
+      document.getElementById("db-run-btn").disabled = !(state.sdPath && !state.dbRunning);
+    }
+
+    async function runDbUpdate() {
+      state.dbRunning = true; updateDbRunBtn();
+      document.getElementById("db-running").style.display = "";
+      document.getElementById("db-result").innerHTML = "";
+      const terminal = document.getElementById("db-terminal");
+      terminal.style.display = ""; terminal.innerHTML = "";
+
+      const cleanup = window.api.onDbLog(msg => {
+        const line = document.createElement("div");
+        if (msg.startsWith("$")) line.className = "cmd";
+        else if (msg.includes("✅") || msg.includes("Done")) line.className = "ok";
+        else if (msg.includes("❌") || msg.includes("ERROR") || msg.includes("WARNING")) line.className = "err";
+        line.textContent = msg; terminal.appendChild(line);
+        terminal.scrollTop = terminal.scrollHeight;
+      });
+
+      const result = await window.api.runDbUpdate({
+        sdPath: state.sdPath, embedArt: state.embedArt, resizeCovers: state.resizeCovers,
+      });
+
+      cleanup(); state.dbRunning = false;
+      document.getElementById("db-running").style.display = "none"; updateDbRunBtn();
+      const resultDiv = document.getElementById("db-result");
+      if (result.success) {
+        resultDiv.innerHTML = `<div class="result-banner success">${t("db.success")}</div>`;
+      } else {
+        resultDiv.innerHTML = `<div class="result-banner error">❌ ${result.error}</div>`;
+      }
+    }
+
+    // ═══════════════════════════════════════════════
+    // DEPENDENCIES MODAL
+    // ═══════════════════════════════════════════════
+    async function openDepsModal() {
+      const modal = document.getElementById("deps-modal");
+      modal.style.display = "";
+      const grid = document.getElementById("deps-grid");
+      grid.innerHTML = '<div class="empty-msg">…</div>';
+
+      const deps = await window.api.checkDeps();
+      const info = await window.api.getPlatformInfo();
+
+      grid.innerHTML = Object.entries(deps).map(([name, status]) => {
+        let label = t("deps.missing"), cls = "missing";
+        if (status === "bundled") { label = t("deps.bundled"); cls = "ok"; }
+        else if (status === "system") { label = t("deps.system"); cls = "ok"; }
+        else if (status === "installed") { label = t("deps.installed"); cls = "ok"; }
+        return `<div class="dep-item">
+          <span class="dep-dot ${cls}"></span><span>${name}</span>
+          <span style="margin-left:auto;font-size:10px;color:var(--text-muted)">${label}</span>
+        </div>`;
+      }).join("");
+
+      document.getElementById("deps-platform").textContent =
+        `Platform: ${info.platform}-${info.arch} · Bundled bins: ${info.hasBundledBins ? "yes" : "no"}`;
+    }
+
+    function closeDepsModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById("deps-modal").style.display = "none";
+    }
+
+    // ═══════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════
+    setAccent(currentAccent);
+    applyLang();
+  </script>
+</body>
+</html>
