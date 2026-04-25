@@ -88,16 +88,6 @@ assets/
 npm run build:mac-arm64
 ```
 
-**macOS (Intel):**
-```bash
-npm run build:mac-x64
-```
-
-**macOS (Universal — ARM + Intel):**
-```bash
-npm run build:mac-universal
-```
-
 **Windows:**
 ```bash
 npm run build:win
@@ -119,7 +109,6 @@ Output files are in the `dist/` folder.
 
 - **macOS → Windows**: Works out of the box with `electron-builder`. You need Windows binaries (`.exe`) in `scripts/bin/win32-x64/`.
 - **macOS → Linux**: Works similarly. Place Linux binaries in `scripts/bin/linux-x64/`.
-- **Universal macOS build**: Requires both `scripts/bin/darwin-arm64/` and `scripts/bin/darwin-x64/`.
 
 ## System Dependencies
 
@@ -152,7 +141,6 @@ hibyos-toolbox/
 │   ├── Update_Database.py      # Database update script
 │   └── bin/                    # Bundled binaries (done with the script or manually)
 │       ├── darwin-arm64/
-│       ├── darwin-x64/
 │       ├── linux-x64/
 │       └── win32-x64/
 └── assets/
