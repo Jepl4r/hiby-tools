@@ -51,12 +51,23 @@ copy_tool() {
         local cmd_path
         cmd_path=$(which "$cmd" 2>/dev/null || true)
         if [ -n "$cmd_path" ]; then
-            cp "$cmd_path" "$BIN_DIR/$target_name"
+            local real_path="$cmd_path"
+
+            if [ "$OS" = "Linux" ] && file "$cmd_path" | grep -q "shell script"; then
+                local exec_target
+                exec_target=$(grep -oP '(?<=exec\s)(\S+)' "$cmd_path" 2>/dev/null | head -1)
+                if [ -n "$exec_target" ] && [ -x "$exec_target" ]; then
+                    echo "   ↳ $cmd_path is a wrapper → resolved to $exec_target"
+                    real_path="$exec_target"
+                fi
+            fi
+
+            cp "$real_path" "$BIN_DIR/$target_name"
             chmod +x "$BIN_DIR/$target_name"
             if [ "$cmd" != "$target_name" ]; then
-                echo "✅ $target_name → copied from $cmd_path (via $cmd)"
+                echo "✅ $target_name → copied from $real_path (via $cmd)"
             else
-                echo "✅ $target_name → copied from $cmd_path"
+                echo "✅ $target_name → copied from $real_path"
             fi
             FOUND=$((FOUND + 1))
             return 0
@@ -68,7 +79,17 @@ copy_tool() {
     return 1
 }
 
-copy_tool "7z"         "7z" "7za" "7zr" || true
+copy_tool "7z"         "7zz" "7z" "7za" "7zr" || true
+
+if [ "$OS" = "Linux" ]; then
+    for so_dir in /usr/lib/7zip /usr/lib/p7zip /usr/libexec/p7zip; do
+        if [ -f "$so_dir/7z.so" ]; then
+            cp "$so_dir/7z.so" "$BIN_DIR/7z.so"
+            echo "   ✅ 7z.so → copied from $so_dir/7z.so"
+            break
+        fi
+    done
+fi
 
 copy_tool "unsquashfs" "unsquashfs" || true
 copy_tool "mksquashfs" "mksquashfs" || true
@@ -89,10 +110,10 @@ if [ $MISSING -gt 0 ]; then
     if [ "$OS" = "Darwin" ]; then
         echo "  brew install p7zip squashfs cdrtools"
     else
-        echo "  sudo apt install p7zip-full squashfs-tools genisoimage"
+        echo "  sudo apt install 7zip squashfs-tools genisoimage"
         echo "  # or on Fedora/RHEL:"
-        echo "  sudo dnf install p7zip p7zip-plugins squashfs-tools genisoimage"
+        echo "  sudo dnf install 7zip squashfs-tools genisoimage"
         echo "  # or on Arch:"
-        echo "  sudo pacman -S p7zip squashfs-tools cdrtools"
+        echo "  sudo pacman -S 7zip squashfs-tools cdrtools"
     fi
 fi

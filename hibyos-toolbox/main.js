@@ -64,13 +64,38 @@ function getBinDir() {
   return null;
 }
 
+const CMD_ALIASES = {
+  "7z":      ["7zz", "7za"],
+  "mkisofs": ["genisoimage"],
+};
+
 function resolveCmd(cmd) {
   const binDir = getBinDir();
   const ext = process.platform === "win32" ? ".exe" : "";
+  const aliases = CMD_ALIASES[cmd] || [];
 
   if (binDir) {
-    const local = path.join(binDir, cmd + ext);
-    if (fs.existsSync(local)) return local;
+    for (const name of [cmd, ...aliases]) {
+      const local = path.join(binDir, name + ext);
+      if (fs.existsSync(local)) return local;
+    }
+  }
+
+  const systemOrder = [...aliases, cmd];
+  if (process.platform !== "win32") {
+    for (const name of systemOrder) {
+      try {
+        execFileSync("which", [name], { stdio: "pipe", encoding: "utf8" });
+        return name;
+      } catch {}
+    }
+  } else {
+    for (const name of systemOrder) {
+      try {
+        execFileSync("where", [name + ext], { stdio: "pipe", encoding: "utf8" });
+        return name + ext;
+      } catch {}
+    }
   }
 
   return cmd;
@@ -150,8 +175,9 @@ ipcMain.handle("pick-files", async (event, title, filters) => {
 
 ipcMain.handle("list-files", async (event, dirPath, extension) => {
   try {
-    if (!fs.existsSync(dirPath)) return [];
-    return fs.readdirSync(dirPath, { withFileTypes: true })
+    const resolved = resolvePath(dirPath);
+    if (!fs.existsSync(resolved)) return [];
+    return fs.readdirSync(resolved, { withFileTypes: true })
       .filter((e) => e.isFile() && (!extension || e.name.endsWith(extension)))
       .map((e) => e.name);
   } catch { return []; }
@@ -178,7 +204,8 @@ ipcMain.handle("open-external", async (event, url) => {
 
 ipcMain.handle("find-themes", async (event, themesDir) => {
   try {
-    if (!fs.existsSync(themesDir)) return [];
+    const resolved = resolvePath(themesDir);
+    if (!fs.existsSync(resolved)) return [];
 
     const allDirs = [];
     function walkDirs(dir) {
@@ -191,7 +218,7 @@ ipcMain.handle("find-themes", async (event, themesDir) => {
         walkDirs(full);
       }
     }
-    walkDirs(themesDir);
+    walkDirs(resolved);
     allDirs.sort();
 
     const validPaths = [];
@@ -221,7 +248,8 @@ ipcMain.handle("find-themes", async (event, themesDir) => {
 
 ipcMain.handle("find-binaries", async (event, binariesDir) => {
   try {
-    if (!fs.existsSync(binariesDir)) return [];
+    const resolved = resolvePath(binariesDir);
+    if (!fs.existsSync(resolved)) return [];
 
     const results = [];
     function walk(dir) {
@@ -239,7 +267,7 @@ ipcMain.handle("find-binaries", async (event, binariesDir) => {
         }
       }
     }
-    walk(binariesDir);
+    walk(resolved);
     results.sort((a, b) => a.path.localeCompare(b.path));
     return results;
   } catch { return []; }
@@ -257,6 +285,23 @@ function computeMd5(filePath) {
     stream.on("end", () => resolve(hash.digest("hex")));
     stream.on("error", reject);
   });
+}
+
+function resolveSubdir(parentDir, name) {
+  const exact = path.join(parentDir, name);
+  if (fs.existsSync(exact)) return exact;
+  try {
+    const lower = name.toLowerCase();
+    const match = fs.readdirSync(parentDir, { withFileTypes: true })
+      .find(e => e.isDirectory() && e.name.toLowerCase() === lower);
+    if (match) return path.join(parentDir, match.name);
+  } catch {}
+  return exact;
+}
+
+function resolvePath(fullPath) {
+  if (fs.existsSync(fullPath)) return fullPath;
+  return resolveSubdir(path.dirname(fullPath), path.basename(fullPath));
 }
 
 function concatFiles(dir, globPrefix, outPath) {
@@ -355,7 +400,7 @@ ipcMain.handle(
       }
 
       async function execute() {
-        const FIRMWARE_DIR = path.join(projectDir, "Firmware");
+        const FIRMWARE_DIR = resolveSubdir(projectDir, "Firmware");
         const WORK_DIR = path.join(projectDir, "temp");
         const OUT_DIR = path.join(WORK_DIR, "ota_v0");
         const SQUASH_DIR = path.join(projectDir, "squashfs-root");
@@ -370,6 +415,12 @@ ipcMain.handle(
           fs.mkdirSync(WORK_DIR, { recursive: true });
 
           sendLog("Extracting firmware...");
+          try {
+            const resolved7z = resolveCmd("7z");
+            const verProc = require("child_process").execFileSync(resolved7z, ["--help"], { env: getEnv(), encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
+            const verLine = verProc.split("\n").find(l => l.includes("7-Zip") || l.includes("p7zip"));
+            if (verLine) sendLog(`Using: ${verLine.trim()}`);
+          } catch {}
           await runStep("7z", ["x", path.join(FIRMWARE_DIR, uptFile), `-o${WORK_DIR}`, "-y"], projectDir);
 
           sendLog("Merging squashfs chunks...");
@@ -557,20 +608,21 @@ ipcMain.handle("check-deps", async () => {
   for (const cmd of required) {
     const resolved = resolveCmd(cmd);
 
-    if (resolved !== cmd && fs.existsSync(resolved)) {
+    if (resolved !== cmd && resolved !== cmd + ".exe" && fs.existsSync(resolved)) {
       deps[cmd] = "bundled";
-      continue;
-    }
-
-    try {
-      if (isWin) {
-        execFileSync("where", [cmd], { env, stdio: "pipe", encoding: "utf8" });
-      } else {
-        execFileSync("which", [cmd], { env, stdio: "pipe", encoding: "utf8" });
-      }
+    } else if (resolved !== cmd) {
       deps[cmd] = "system";
-    } catch {
-      deps[cmd] = null;
+    } else {
+      try {
+        if (isWin) {
+          execFileSync("where", [cmd], { env, stdio: "pipe", encoding: "utf8" });
+        } else {
+          execFileSync("which", [cmd], { env, stdio: "pipe", encoding: "utf8" });
+        }
+        deps[cmd] = "system";
+      } catch {
+        deps[cmd] = null;
+      }
     }
   }
 
