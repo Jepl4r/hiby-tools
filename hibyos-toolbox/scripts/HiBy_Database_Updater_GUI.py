@@ -4,7 +4,8 @@ HiBy DAP - Media Database Updater (GUI)
 Scans the SD card and rebuilds usrlocal_media.db
 
 Compatible with macOS, Linux, and Windows.
-Requirements: pip install mutagen customtkinter Pillow
+Requirements: pip install mutagen Pillow
+Optional (standalone GUI only): pip install customtkinter
 """
 
 import io
@@ -16,7 +17,6 @@ import time
 import errno
 import unicodedata
 import threading
-import customtkinter as ctk
 from mutagen import File
 
 
@@ -850,7 +850,15 @@ def rebuild_db(sd, embed_art_enabled=True, resize_covers_enabled=False, on_progr
 
 # ── GUI ───────────────────────────────────────────────────────────────────────
 
-class App(ctk.CTk):
+try:
+    import customtkinter as ctk
+    _CTK_AVAILABLE = True
+except ImportError:
+    _CTK_AVAILABLE = False
+    ctk = None
+
+
+class App(ctk.CTk if _CTK_AVAILABLE else object):
     def __init__(self):
         super().__init__()
         self.title("HiBy Database Updater")
@@ -1071,6 +1079,10 @@ class App(ctk.CTk):
 
 
 if __name__ == "__main__":
+    if not _CTK_AVAILABLE:
+        print("Error: customtkinter is required for GUI mode.", file=sys.stderr)
+        print("Install it with: pip install customtkinter", file=sys.stderr)
+        sys.exit(1)
     ctk.set_appearance_mode("system")
     ctk.set_default_color_theme("blue")
     app = App()

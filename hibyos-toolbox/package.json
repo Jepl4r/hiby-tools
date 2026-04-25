@@ -20,13 +20,14 @@
       "preload.js",
       "src/**/*",
       "scripts/**/*",
+      "!scripts/bin/**",
       "assets/**/*"
     ],
     "extraResources": [
       {
         "from": "scripts",
         "to": "scripts",
-        "filter": ["**/*"]
+        "filter": ["**/*", "!bin/**"]
       }
     ],
     "mac": {
@@ -38,16 +39,37 @@
           "arch": ["arm64"]
         }
       ],
-      "hardenedRuntime": false
+      "hardenedRuntime": false,
+      "extraResources": [
+        {
+          "from": "scripts/bin/darwin-arm64",
+          "to": "scripts/bin/darwin-arm64",
+          "filter": ["**/*"]
+        }
+      ]
     },
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.ico",
+      "extraResources": [
+        {
+          "from": "scripts/bin/win32-x64",
+          "to": "scripts/bin/win32-x64",
+          "filter": ["**/*"]
+        }
+      ]
     },
     "linux": {
       "target": ["AppImage", "deb"],
       "icon": "assets/icon.png",
-      "category": "Utility"
+      "category": "Utility",
+      "extraResources": [
+        {
+          "from": "scripts/bin/linux-x64",
+          "to": "scripts/bin/linux-x64",
+          "filter": ["**/*"]
+        }
+      ]
     },
     "nsis": {
       "oneClick": true,

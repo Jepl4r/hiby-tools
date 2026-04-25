@@ -1,7 +1,8 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
 const path = require("path");
-const { spawn, execSync } = require("child_process");
+const { spawn, execSync, execFileSync } = require("child_process");
 const fs = require("fs");
+const crypto = require("crypto");
 
 let mainWindow;
 
@@ -80,14 +81,40 @@ function getEnv() {
   const binDir = getBinDir();
   const sep = process.platform === "win32" ? ";" : ":";
 
-  const extraPaths = [
-    binDir,
-    "/opt/homebrew/bin",
-    "/opt/homebrew/sbin",
-    "/usr/local/bin",
-  ].filter(Boolean);
+  const extraPaths = [binDir];
 
-  env.PATH = extraPaths.join(sep) + sep + (env.PATH || "");
+  if (process.platform === "win32") {
+    const localAppData = env.LOCALAPPDATA || "";
+    if (localAppData) {
+      try {
+        const pyBase = path.join(localAppData, "Programs", "Python");
+        if (fs.existsSync(pyBase)) {
+          for (const d of fs.readdirSync(pyBase).sort().reverse()) {
+            if (d.startsWith("Python")) {
+              extraPaths.push(path.join(pyBase, d));
+              extraPaths.push(path.join(pyBase, d, "Scripts"));
+            }
+          }
+        }
+      } catch {}
+      extraPaths.push(path.join(localAppData, "Microsoft", "WindowsApps"));
+    }
+    for (const drv of ["C", "D"]) {
+      try {
+        const base = `${drv}:\\Python`;
+        if (fs.existsSync(base)) {
+          for (const d of fs.readdirSync(base).sort().reverse()) {
+            extraPaths.push(path.join(base, d));
+            extraPaths.push(path.join(base, d, "Scripts"));
+          }
+        }
+      } catch {}
+    }
+  } else {
+    extraPaths.push("/opt/homebrew/bin", "/opt/homebrew/sbin", "/usr/local/bin");
+  }
+
+  env.PATH = extraPaths.filter(Boolean).join(sep) + sep + (env.PATH || "");
   env.PYTHONDONTWRITEBYTECODE = "1";
   env.PYTHONUNBUFFERED = "1";
   return env;
@@ -219,6 +246,80 @@ ipcMain.handle("find-binaries", async (event, binariesDir) => {
 });
 
 // ═══════════════════════════════════════════════
+// CROSS-PLATFORM HELPERS
+// ═══════════════════════════════════════════════
+
+function computeMd5(filePath) {
+  return new Promise((resolve, reject) => {
+    const hash = crypto.createHash("md5");
+    const stream = fs.createReadStream(filePath);
+    stream.on("data", (d) => hash.update(d));
+    stream.on("end", () => resolve(hash.digest("hex")));
+    stream.on("error", reject);
+  });
+}
+
+function concatFiles(dir, globPrefix, outPath) {
+  const files = fs.readdirSync(dir)
+    .filter((f) => f.startsWith(globPrefix))
+    .sort();
+  const out = fs.openSync(outPath, "w");
+  for (const f of files) {
+    const buf = fs.readFileSync(path.join(dir, f));
+    fs.writeSync(out, buf);
+  }
+  fs.closeSync(out);
+}
+
+function splitFile(filePath, chunkSize, outPrefix) {
+  const fd = fs.openSync(filePath, "r");
+  const buf = Buffer.alloc(chunkSize);
+  let index = 0;
+  let bytesRead;
+  while ((bytesRead = fs.readSync(fd, buf, 0, chunkSize)) > 0) {
+    const suffix = String(index).padStart(4, "a".charCodeAt(0) <= 97 ? 4 : 4);
+    const label = splitIndexToAlpha(index, 4);
+    fs.writeFileSync(outPrefix + label, buf.subarray(0, bytesRead));
+    index++;
+  }
+  fs.closeSync(fd);
+}
+
+function splitIndexToAlpha(n, width) {
+  let s = "";
+  for (let i = 0; i < width; i++) {
+    s = String.fromCharCode(97 + (n % 26)) + s;
+    n = Math.floor(n / 26);
+  }
+  return s;
+}
+
+function copyDirRecursive(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyDirRecursive(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+function deleteJunkFiles(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      deleteJunkFiles(full);
+    } else if (entry.name === ".DS_Store" || entry.name.startsWith("._")) {
+      fs.unlinkSync(full);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════
 // FIRMWARE MODDER
 // ═══════════════════════════════════════════════
 
@@ -234,7 +335,11 @@ ipcMain.handle(
         const resolved = resolveCmd(cmd);
         return new Promise((res, rej) => {
           sendLog(`$ ${path.basename(resolved)} ${args.join(" ")}`);
-          const proc = spawn(resolved, args, { cwd, env: getEnv() });
+          const proc = spawn(resolved, args, {
+            cwd,
+            env: getEnv(),
+            windowsHide: true,
+          });
           let out = "";
           proc.stdout.on("data", (d) => {
             out += d.toString();
@@ -247,16 +352,6 @@ ipcMain.handle(
           });
           proc.on("error", (err) => rej(err));
         });
-      }
-
-      async function computeMd5(filePath) {
-        try {
-          const out = await runStep("md5sum", [filePath], path.dirname(filePath));
-          return out.trim().split(/\s+/)[0];
-        } catch {
-          const out = await runStep("md5", ["-q", filePath], path.dirname(filePath));
-          return out.trim();
-        }
       }
 
       async function execute() {
@@ -278,7 +373,7 @@ ipcMain.handle(
           await runStep("7z", ["x", path.join(FIRMWARE_DIR, uptFile), `-o${WORK_DIR}`, "-y"], projectDir);
 
           sendLog("Merging squashfs chunks...");
-          await runStep("bash", ["-c", `cat rootfs.squashfs.* > "${origSquash}"`], OUT_DIR);
+          concatFiles(OUT_DIR, "rootfs.squashfs.", origSquash);
 
           sendLog("Extracting filesystem (rootfs)...");
           await runStep("unsquashfs", ["-f", "-d", SQUASH_DIR, origSquash], projectDir);
@@ -295,19 +390,18 @@ ipcMain.handle(
             sendLog(`Applying patched binary: ${path.basename(binaryPath)}...`);
             const dest = path.join(SQUASH_DIR, "usr", "bin", "hiby_player");
             fs.copyFileSync(path.join(binaryPath, "hiby_player"), dest);
-            fs.chmodSync(dest, 0o755);
+            try { fs.chmodSync(dest, 0o755); } catch {}
             sendLog("Binary applied.");
           }
 
           if (themePath) {
             sendLog(`Applying theme: ${path.basename(themePath)}...`);
-            await runStep("cp", ["-a", `${themePath}/.`, SQUASH_DIR], projectDir);
+            copyDirRecursive(themePath, SQUASH_DIR);
             sendLog("Theme applied.");
           }
 
           sendLog("Cleaning .DS_Store and ._ files...");
-          await runStep("find", [SQUASH_DIR, "-name", ".DS_Store", "-type", "f", "-delete"], projectDir).catch(() => {});
-          await runStep("find", [SQUASH_DIR, "-name", "._*", "-type", "f", "-delete"], projectDir).catch(() => {});
+          deleteJunkFiles(SQUASH_DIR);
 
           sendLog("Creating new filesystem (squashfs)...");
           const ROOTFS_NEW = path.join(OUT_DIR, "rootfs.squashfs");
@@ -333,7 +427,8 @@ ipcMain.handle(
           );
 
           sendLog("Splitting into chunks and creating MD5 chain...");
-          await runStep("split", ["-b", "524288", "-a", "4", ROOTFS_NEW, path.join(OUT_DIR, "temp_chunk_")], projectDir);
+          const CHUNK_SIZE = 524288;
+          splitFile(ROOTFS_NEW, CHUNK_SIZE, path.join(OUT_DIR, "temp_chunk_"));
           fs.unlinkSync(ROOTFS_NEW);
 
           const MD5_FILE = path.join(OUT_DIR, `ota_md5_rootfs.squashfs.${ORIGINAL_SUM}`);
@@ -377,12 +472,38 @@ ipcMain.handle(
 // DATABASE UPDATER
 // ═══════════════════════════════════════════════
 
+function resolvePython() {
+  const env = getEnv();
+
+  const resolved = resolveCmd("python3");
+  if (resolved !== "python3") return resolved;
+
+  if (process.platform === "win32") {
+    const resolvedPy = resolveCmd("python");
+    if (resolvedPy !== "python") return resolvedPy;
+  }
+
+  try {
+    execFileSync("python3", ["--version"], { env, stdio: "pipe" });
+    return "python3";
+  } catch {}
+
+  if (process.platform === "win32") {
+    try {
+      execFileSync("python", ["--version"], { env, stdio: "pipe" });
+      return "python";
+    } catch {}
+  }
+
+  return process.platform === "win32" ? "python" : "python3";
+}
+
 ipcMain.handle(
   "run-db-update",
   async (event, { sdPath, embedArt, resizeCovers }) => {
     return new Promise((resolve) => {
       const scriptPath = path.join(getScriptsPath(), "electron_db_wrapper.py");
-      const python = resolveCmd("python3");
+      const python = resolvePython();
 
       function sendLog(type, msg) {
         mainWindow.webContents.send("db-log", `${type}:${msg}`);
@@ -391,6 +512,7 @@ ipcMain.handle(
       const proc = spawn(python, ["-u", scriptPath, sdPath, embedArt ? "y" : "n", resizeCovers ? "y" : "n"], {
         cwd: sdPath,
         env: getEnv(),
+        windowsHide: true,
       });
 
       proc.stdout.on("data", (data) => {
@@ -428,7 +550,9 @@ ipcMain.handle(
 ipcMain.handle("check-deps", async () => {
   const deps = {};
   const isWin = process.platform === "win32";
-  const required = ["7z", "unsquashfs", "mksquashfs", "mkisofs", "python3", "md5sum", "split"];
+  const env = getEnv();
+
+  const required = ["7z", "unsquashfs", "mksquashfs", "mkisofs"];
 
   for (const cmd of required) {
     const resolved = resolveCmd(cmd);
@@ -439,18 +563,31 @@ ipcMain.handle("check-deps", async () => {
     }
 
     try {
-      const which = isWin ? "where" : "which";
-      execSync(`${which} ${cmd}`, { env: getEnv(), encoding: "utf8" });
+      if (isWin) {
+        execFileSync("where", [cmd], { env, stdio: "pipe", encoding: "utf8" });
+      } else {
+        execFileSync("which", [cmd], { env, stdio: "pipe", encoding: "utf8" });
+      }
       deps[cmd] = "system";
     } catch {
       deps[cmd] = null;
     }
   }
 
-  const python = resolveCmd("python3");
+  const pythonCmd = resolvePython();
+  try {
+    execFileSync(pythonCmd, ["--version"], { env, stdio: "pipe" });
+    const bundledPy = resolveCmd("python3");
+    const isBundled = bundledPy !== "python3" && pythonCmd === bundledPy;
+    deps["python3"] = isBundled ? "bundled" : "system";
+  } catch {
+    deps["python3"] = null;
+  }
+
+  const pyExec = deps["python3"] ? pythonCmd : pythonCmd;
   for (const mod of [["mutagen", "import mutagen"], ["Pillow", "from PIL import Image"]]) {
     try {
-      execSync(`${python} -c "${mod[1]}"`, { env: getEnv() });
+      execFileSync(pyExec, ["-c", mod[1]], { env, stdio: "pipe" });
       deps[mod[0]] = "installed";
     } catch {
       deps[mod[0]] = null;

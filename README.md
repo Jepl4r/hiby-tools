@@ -37,11 +37,15 @@ npm start
 - [Node.js](https://nodejs.org/) (LTS recommended)
 - npm (comes with Node.js)
 
+---
+
 ### 1. Install dependencies
 
 ```bash
 npm install
 ```
+
+---
 
 ### 2. Bundle native binaries (recommended)
 
@@ -70,6 +74,74 @@ The app checks for binaries in this order:
 2. `scripts/bin/` (generic fallback)
 3. System `PATH`
 
+---
+
+**Windows**
+
+#### 1. `7z.exe` + `7z.dll`
+
+**Source:** [7-Zip](https://www.7-zip.org/download.html)
+
+1. Install 7-Zip (or download the "console version" `.7z` archive).
+2. Copy **both** files from `C:\Program Files\7-Zip\`:
+   - `7z.exe`
+   - `7z.dll` ← required, 7z.exe won't work without it
+
+**Alternative ([MSYS2](https://www.msys2.org/)):**
+```bash
+pacman -S p7zip
+```
+This gives you `7z.exe` at `<install location of MSYS2>/usr/bin/`.
+
+---
+
+#### 2. `unsquashfs.exe` and `mksquashfs.exe`
+
+**Source [MSYS2](https://www.msys2.org/) (Recommended):**
+```bash
+pacman -S squashfs-tools
+```
+This gives you both `unsquashfs.exe` and `mksquashfs.exe` at `<install location of MSYS2>/usr/bin/`.
+
+**Alternative:** [squashfs-tools-ng](https://infraroot.at/pub/squashfs/windows/)
+Download the latest `*-mingw64.zip` from releases. Note that squashfs-tools-ng has a **different CLI** (`rdsquashfs` / `gensquashfs`) than the classic `unsquashfs` / `mksquashfs`, so MSYS2 squashfs-tools is strongly preferred.
+
+### ⚠️ Important: The `unsquashfs.exe` and `mksquashfs.exe` packages are MSYS2 binaries that depend on `msys-2.0.dll` and other MSYS2 runtime DLLs.
+
+To make them work standalone (outside MSYS2), copy these DLLs alongside the `.exe` files:
+
+>From C:/WINDOWS/SYSTEM32/
+```
+ntdll.dll
+xtajit64se.dll
+KERNEL32.DLL
+KERNELBASE.dll
+apphelp.dll
+```
+>From /usr/bin/ inside the MSYS2 installation folder
+
+```
+msys-2.0.dll
+msys-lz4-1.dll
+msys-lzo2-2.dll
+msys-z.dll
+msys-lzma-5.dll
+msys-gcc_s-seh-1.dll
+msys-zstd-1.dll
+```
+
+#### 3. `mkisofs.exe`
+
+**⚠️ Not available in MSYS2** — `cdrtools` / `genisoimage` are not packaged.
+
+**Source:** [Schily cdrtools native Windows build](https://opensourcepack.blogspot.com/p/cdrtools.html)
+
+1. Download `schily-cdrtools-3.01a23.7z` 
+2. Extract and find `mkisofs.exe` inside.
+3. Copy it into `scripts/bin/win32-x64/`.
+
+---
+
 ### 3. Add app icons
 
 Place your icons in the `assets/` folder:
@@ -80,6 +152,8 @@ assets/
 ├── icon.ico    ← Windows
 └── icon.png    ← Linux
 ```
+
+---
 
 ### 4. Build
 
