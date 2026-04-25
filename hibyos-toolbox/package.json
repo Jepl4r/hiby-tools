@@ -7,14 +7,10 @@
     "start": "electron .",
 
     "build:mac-arm64": "electron-builder --mac --arm64",
-    "build:mac-x64": "electron-builder --mac --x64",
-    "build:mac-universal": "electron-builder --mac --universal",
-    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win --x64",
+    "build:linux": "electron-builder --linux --x64",
 
-    "build:win": "electron-builder --win",
-    "build:linux": "electron-builder --linux",
-
-    "build:all": "electron-builder --mac --win --linux"
+    "build:all": "electron-builder --mac --arm64 --win --x64 --linux --x64"
   },
   "build": {
     "appId": "com.hibyos.toolbox",
