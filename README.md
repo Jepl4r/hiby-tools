@@ -58,7 +58,7 @@ This detects your platform (e.g. `darwin-arm64`) and copies `7z`, `unsquashfs`, 
 **Manual:**
 
 ```bash
-mkdir -p scripts/bin/darwin-arm64   # or darwin-x64, linux-x64, win32-x64
+mkdir -p scripts/bin/darwin-arm64   # or linux-x64, win32-x64
 cp $(which 7z) scripts/bin/darwin-arm64/
 cp $(which unsquashfs) scripts/bin/darwin-arm64/
 cp $(which mksquashfs) scripts/bin/darwin-arm64/
