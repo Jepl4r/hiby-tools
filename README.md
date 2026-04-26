@@ -6,12 +6,12 @@ Built with Electron. Runs on macOS, Linux, and Windows.
 
 <table>
   <tr>
-    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Firmware%20Modder.png?raw=true" width="536"><br><b>Firmware Modder</b></td>
-    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Database%20Updater.png?raw=true" width="536"><br><b>Database Updater</b></td>
+    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Firmware%20Modder.png" width="536"><br><b>Firmware Modder</b></td>
+    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Database%20Updater.png" width="536"><br><b>Database Updater</b></td>
   </tr>
   <tr>
-    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Playlist%20Manager.png?raw=true" width="536"><br><b>Playlist Manager</b></td>
-    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/ADB%20Manager.png?raw=true" width="536"><br><b>ADB Manager</b></td>
+    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Playlist%20Manager.png" width="536"><br><b>Playlist Manager</b></td>
+    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/ADB%20Manager.png" width="536"><br><b>ADB Manager</b></td>
   </tr>
 </table>
 
@@ -139,7 +139,7 @@ msys-zstd-1.dll
 
 #### 3. `mkisofs.exe`
 
-**⚠️ Not available in MSYS2** — `cdrtools` / `genisoimage` are not packaged.
+>**⚠️ Not available in MSYS2** — `cdrtools` / `genisoimage` are not packaged.
 
 **Source:** [Schily cdrtools native Windows build](https://opensourcepack.blogspot.com/p/cdrtools.html)
 
