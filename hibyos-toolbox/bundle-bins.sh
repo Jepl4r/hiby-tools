@@ -101,6 +101,60 @@ copy_tool "md5sum"     "md5sum" || true
 copy_tool "split"      "split" || true
 
 echo ""
+echo "── ADB Manager ──"
+
+copy_tool "ffmpeg"     "ffmpeg" || true
+
+copy_adb() {
+    local adb_path
+    adb_path=$(which adb 2>/dev/null || true)
+
+    if [ -z "$adb_path" ]; then
+        local candidates=()
+        if [ "$OS" = "Darwin" ]; then
+            candidates=(
+                "$HOME/Library/Android/sdk/platform-tools/adb"
+                "/opt/homebrew/bin/adb"
+                "/usr/local/bin/adb"
+            )
+        else
+            candidates=(
+                "$HOME/Android/Sdk/platform-tools/adb"
+                "/usr/bin/adb"
+                "/usr/local/bin/adb"
+            )
+        fi
+        for c in "${candidates[@]}"; do
+            if [ -x "$c" ]; then
+                adb_path="$c"
+                break
+            fi
+        done
+    fi
+
+    if [ -n "$adb_path" ]; then
+        cp "$adb_path" "$BIN_DIR/adb"
+        chmod +x "$BIN_DIR/adb"
+        echo "✅ adb → copied from $adb_path"
+
+        local adb_dir
+        adb_dir=$(dirname "$adb_path")
+        for lib in "$adb_dir"/lib*.so "$adb_dir"/lib*.dylib; do
+            if [ -f "$lib" ]; then
+                cp "$lib" "$BIN_DIR/"
+                echo "   ✅ $(basename "$lib") → copied"
+            fi
+        done
+
+        FOUND=$((FOUND + 1))
+    else
+        echo "⚠️  adb → not found"
+        MISSING=$((MISSING + 1))
+    fi
+}
+copy_adb
+
+echo ""
 echo "────────────────────────────────"
 echo "Done! $FOUND tools bundled, $MISSING missing."
 
@@ -108,12 +162,16 @@ if [ $MISSING -gt 0 ]; then
     echo ""
     echo "To install missing tools:"
     if [ "$OS" = "Darwin" ]; then
-        echo "  brew install p7zip squashfs cdrtools"
+        echo "  brew install p7zip squashfs cdrtools ffmpeg"
+        echo "  # For ADB:"
+        echo "  brew install android-platform-tools"
     else
-        echo "  sudo apt install 7zip squashfs-tools genisoimage"
+        echo "  sudo apt install 7zip squashfs-tools genisoimage ffmpeg"
+        echo "  # For ADB:"
+        echo "  sudo apt install android-tools-adb"
         echo "  # or on Fedora/RHEL:"
-        echo "  sudo dnf install 7zip squashfs-tools genisoimage"
+        echo "  sudo dnf install 7zip squashfs-tools genisoimage ffmpeg android-tools"
         echo "  # or on Arch:"
-        echo "  sudo pacman -S 7zip squashfs-tools cdrtools"
+        echo "  sudo pacman -S 7zip squashfs-tools cdrtools ffmpeg android-tools"
     fi
 fi

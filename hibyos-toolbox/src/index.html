@@ -35,6 +35,12 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; }
 
+    /* Global scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
     body {
       font-family: var(--font);
       background: var(--bg-primary);
@@ -184,9 +190,6 @@
     .content {
       flex: 1; overflow-y: auto; padding: 24px; -webkit-app-region: no-drag;
     }
-    .content::-webkit-scrollbar { width: 6px; }
-    .content::-webkit-scrollbar-track { background: transparent; }
-    .content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
     .page { display: none; }
     .page.active { display: block; }
@@ -235,8 +238,6 @@
       max-height: 160px; overflow-y: auto; border: 1px solid var(--border);
       border-radius: var(--radius-sm); background: var(--bg-primary);
     }
-    .select-list::-webkit-scrollbar { width: 4px; }
-    .select-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
     .select-item {
       display: flex; align-items: center; gap: 10px; padding: 10px 14px;
       border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; font-size: 13px;
@@ -270,8 +271,6 @@
       padding: 16px; font-family: var(--mono); font-size: 11.5px; line-height: 1.7;
       color: var(--text-secondary); max-height: 320px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
     }
-    .terminal::-webkit-scrollbar { width: 4px; }
-    .terminal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
     .terminal .cmd { color: var(--blue); }
     .terminal .ok { color: var(--green); }
     .terminal .err { color: var(--red); }
@@ -388,6 +387,171 @@
     }
     .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
     .modal-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+
+    /* ADB file browser */
+    .file-list { font-size: 0.85em; }
+    .file-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; cursor: pointer; transition: background 0.1s;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .file-row:hover { background: var(--bg-hover); }
+    .file-row.selected { background: var(--accent); color: #fff; }
+    .file-row.selected .file-size, .file-row.selected .file-date { color: rgba(255,255,255,0.7); }
+    .file-icon { flex-shrink: 0; width: 20px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
+    .file-dir .file-icon { color: var(--accent); }
+    .file-type-audio .file-icon { color: #c678dd; }
+    .file-type-image .file-icon { color: #56b6c2; }
+    .file-type-text .file-icon { color: #98c379; }
+    .file-type-db .file-icon { color: #e5c07b; }
+    .file-type-archive .file-icon { color: #e06c75; }
+    .file-type-binary .file-icon { color: #7f848e; }
+    .file-type-config .file-icon { color: #61afef; }
+    .file-type-video .file-icon { color: #d19a66; }
+    .file-row.selected .file-icon { color: rgba(255,255,255,0.8); }
+    .file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-size { font-size: 0.85em; color: var(--text-muted); min-width: 65px; text-align: right; }
+    .file-date { font-size: 0.85em; color: var(--text-muted); min-width: 120px; text-align: right; }
+    .file-dir .file-name { font-weight: 500; }
+    .info-box-warn { background: rgba(255,180,0,0.1); border: 1px solid rgba(255,180,0,0.3); border-radius: 8px; padding: 10px 14px; }
+    .info-box-success { background: rgba(0,200,80,0.08); border: 1px solid rgba(0,200,80,0.25); border-radius: 8px; padding: 10px 14px; }
+    .btn-sm { padding: 4px 10px; font-size: 0.85em; min-width: unset; }
+    .btn-danger { background: rgba(220,50,50,0.12); color: #d33; border-color: rgba(220,50,50,0.25); }
+    .btn-danger:hover { background: rgba(220,50,50,0.22); }
+
+    /* ADB storage pills */
+    .adb-storage-pill {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; border-radius: 10px;
+      background: var(--bg-input); font-size: 0.88em;
+    }
+    .adb-storage-pill strong { font-size: 0.95em; }
+    .adb-storage-icon { display: flex; align-items: center; color: var(--accent); }
+    .adb-storage-pill[style*="cursor:pointer"]:hover { background: var(--bg-hover); }
+
+    /* Device info row items */
+    .adb-info-item {
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .adb-info-label { font-size: 0.8em; color: var(--text-muted); }
+    .adb-info-value { font-family: var(--mono); font-size: 0.9em; font-weight: 600; color: var(--text-primary); }
+
+    /* Drag and drop zone */
+    .adb-drop-zone.drag-over {
+      border-color: var(--accent) !important;
+      background: var(--accent-glow);
+    }
+
+    /* ADB terminal */
+    .adb-terminal {
+      background: #0a0a0e; color: #e0e0e0; border-radius: 10px;
+      padding: 12px 14px; font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.82em; border: 1px solid var(--border);
+    }
+    .adb-terminal-output {
+      max-height: 240px; overflow-y: auto; white-space: pre-wrap;
+      word-break: break-all; margin-bottom: 8px; line-height: 1.5;
+      user-select: text; -webkit-user-select: text; cursor: text;
+    }
+    .adb-terminal-output .cmd { color: #7ec8e3; }
+    .adb-terminal-output .out { color: #c8c8c8; }
+    .adb-terminal-output .err { color: #e06c75; }
+    .adb-prompt { color: #98c379; font-weight: bold; user-select: none; }
+    .adb-terminal-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: #e0e0e0; font-family: inherit; font-size: inherit;
+      caret-color: #7ec8e3;
+    }
+    .adb-terminal-input::placeholder { color: #555; }
+
+    /* Screenshot thumbnails */
+    .screenshot-thumb {
+      width: 90px; cursor: pointer; border-radius: 6px;
+      border: 1px solid var(--border); transition: all 0.15s;
+      object-fit: cover; aspect-ratio: 2/3;
+    }
+    .screenshot-thumb:hover {
+      border-color: var(--accent); transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    /* ANSI terminal colors */
+    .ansi-bold { font-weight: 700; }
+    .ansi-dim { opacity: 0.6; }
+    .ansi-italic { font-style: italic; }
+    .ansi-underline { text-decoration: underline; }
+    .ansi-black { color: #555; }
+    .ansi-red { color: #e06c75; }
+    .ansi-green { color: #98c379; }
+    .ansi-yellow { color: #e5c07b; }
+    .ansi-blue { color: #61afef; }
+    .ansi-magenta { color: #c678dd; }
+    .ansi-cyan { color: #56b6c2; }
+    .ansi-white { color: #dcdfe4; }
+    .ansi-bright-black { color: #7f848e; }
+    .ansi-bright-red { color: #f44747; }
+    .ansi-bright-green { color: #b5f7b9; }
+    .ansi-bright-yellow { color: #fce566; }
+    .ansi-bright-blue { color: #7ec8e3; }
+    .ansi-bright-magenta { color: #e48bff; }
+    .ansi-bright-cyan { color: #92f0f7; }
+    .ansi-bright-white { color: #ffffff; }
+    .ansi-bg-black { background: #555; }
+    .ansi-bg-red { background: #e06c75; }
+    .ansi-bg-green { background: #98c379; }
+    .ansi-bg-blue { background: #61afef; }
+    .ansi-bg-yellow { background: #e5c07b; }
+    .ansi-bg-magenta { background: #c678dd; }
+    .ansi-bg-cyan { background: #56b6c2; }
+    .ansi-bg-white { background: #dcdfe4; }
+
+    /* Dmesg log output */
+    .dmesg-output {
+      background: #0a0a0e; color: #c8c8c8; border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px; font-family: var(--mono);
+      font-size: 11px; line-height: 1.6; max-height: 420px; overflow-y: auto;
+      white-space: pre-wrap; word-break: break-all; margin: 0;
+      user-select: text; -webkit-user-select: text;
+    }
+
+    /* Process table */
+    .proc-table {
+      width: 100%; border-collapse: collapse; font-size: 12px;
+      font-family: var(--mono);
+    }
+    .proc-table th {
+      position: sticky; top: 0; background: var(--bg-tertiary);
+      padding: 8px 10px; text-align: left; font-size: 11px;
+      font-weight: 600; color: var(--text-secondary); text-transform: uppercase;
+      letter-spacing: 0.5px; border-bottom: 1px solid var(--border);
+    }
+    .proc-table td {
+      padding: 5px 10px; border-bottom: 1px solid var(--border);
+      color: var(--text-primary); white-space: nowrap;
+    }
+    .proc-table td:last-child {
+      white-space: normal; word-break: break-all; max-width: 320px;
+    }
+    .proc-table tr:hover td { background: var(--bg-hover); }
+    .proc-table .pid-col { color: var(--accent); font-weight: 500; }
+    .proc-table .cmd-col { color: var(--text-secondary); }
+
+    /* Inline SVG icons (emoji replacements) */
+    .ico { display: inline-block; vertical-align: -2px; flex-shrink: 0; }
+    .status-ico { display: inline-flex; align-items: center; gap: 6px; }
+    /* Connected box */
+    .adb-connected-box {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: var(--radius-sm);
+      background: var(--green-dim); border: 1px solid rgba(92,186,111,0.25);
+      font-weight: 600; color: var(--green);
+    }
+    .adb-error-box {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: var(--radius-sm);
+      background: var(--red-dim); border: 1px solid rgba(226,92,92,0.25);
+      font-weight: 600; color: var(--red);
+    }
   </style>
 </head>
 <body>
@@ -421,6 +585,17 @@
             </svg>
           </div>
           <span data-i18n="nav.database">Database Updater</span>
+        </button>
+        <button class="nav-btn" data-page="adb" onclick="switchPage('adb')">
+          <div class="icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <rect x="4" y="1" width="10" height="16" rx="2" stroke="currentColor" stroke-width="1.3"/>
+              <line x1="4" y1="13" x2="14" y2="13" stroke="currentColor" stroke-width="1.1"/>
+              <circle cx="9" cy="15" r="0.8" fill="currentColor"/>
+              <rect x="6" y="3.5" width="6" height="7.5" rx="0.5" fill="currentColor" opacity="0.15"/>
+            </svg>
+          </div>
+          <span data-i18n="nav.adb">ADB Manager</span>
         </button>
       </div>
 
@@ -468,7 +643,7 @@
 
       <!-- ═══ Footer / Version ═══ -->
       <div class="sidebar-footer">
-        <div class="version-info">v1.1.0</div>
+        <div class="version-info">v1.2.0</div>
         <button class="info-btn" onclick="switchPage('credits')" title="Credits">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <circle cx="5" cy="5" r="4.2" stroke="currentColor" stroke-width="1.1"/>
@@ -597,6 +772,141 @@
           </div>
         </div>
 
+        <!-- ═══ PAGE: ADB ═══ -->
+        <div id="page-adb" class="page">
+
+          <!-- Connect bar -->
+          <div id="adb-connect-bar" class="card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap">
+            <button class="btn btn-primary" id="adb-start-btn" onclick="adbStart()">
+              <span data-i18n="adb.btn.start">Start</span>
+            </button>
+            <span id="adb-status" style="font-size:0.9em; color:var(--text-secondary)" data-i18n="adb.status.idle">Press Start to detect the device.</span>
+          </div>
+
+          <!-- Device info (hidden until connected) -->
+          <div id="adb-connected-section" style="display:none">
+
+            <!-- Device info card -->
+            <div class="card" style="padding:16px 20px">
+              <!-- Row 1: Storage -->
+              <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center">
+                <div id="adb-storage-sd" class="adb-storage-pill" style="cursor:pointer" onclick="adbGoToSd()" title="Open in file browser">
+                  <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="2" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 2v4h6V2" stroke="currentColor" stroke-width="1.1"/><line x1="7" y1="2" x2="7" y2="5" stroke="currentColor" stroke-width="0.8"/><line x1="9" y1="2" x2="9" y2="5" stroke="currentColor" stroke-width="0.8"/><line x1="11" y1="2" x2="11" y2="5" stroke="currentColor" stroke-width="0.8"/></svg></span>
+                  <div><strong>SD Card</strong><br><span id="adb-storage-sd-size">—</span></div>
+                </div>
+                <div id="adb-storage-internal" class="adb-storage-pill" style="cursor:pointer" onclick="adbGoToInternal()" title="Open in file browser">
+                  <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="5" y="1" width="8" height="16" rx="1.5" stroke="currentColor" stroke-width="1.3"/><line x1="5" y1="13" x2="13" y2="13" stroke="currentColor" stroke-width="1"/><circle cx="9" cy="15" r="0.7" fill="currentColor"/></svg></span>
+                  <div><strong data-i18n="adb.storage.internal">Internal Storage</strong><br><span id="adb-storage-internal-size">—</span></div>
+                </div>
+                <div id="adb-storage-ram" class="adb-storage-pill" style="display:none">
+                  <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="5" y="6.5" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.4"/><rect x="10" y="6.5" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.4"/><rect x="5" y="9.5" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.4"/><rect x="10" y="9.5" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.4"/><line x1="4" y1="4" x2="4" y2="2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="7" y1="4" x2="7" y2="2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="11" y1="4" x2="11" y2="2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="14" y1="4" x2="14" y2="2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg></span>
+                  <div><strong>RAM</strong><br><span id="adb-storage-ram-size">—</span></div>
+                </div>
+              </div>
+              <!-- Row 2: Firmware, Kernel, Battery -->
+              <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+                <div id="adb-fw-pill" class="adb-storage-pill" style="display:none">
+                  <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="3" y="4" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><rect x="6" y="7" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.4"/><rect x="10" y="7" width="3" height="2" rx="0.5" fill="currentColor" opacity="0.4"/><line x1="5" y1="4" x2="5" y2="2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="9" y1="4" x2="9" y2="2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="13" y1="4" x2="13" y2="2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></span>
+                  <div><strong>Firmware</strong><br><span id="adb-fw-version" style="font-family:var(--mono); font-size:0.85em;">—</span></div>
+                </div>
+                <div id="adb-kernel-pill" class="adb-storage-pill" style="display:none">
+                  <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="3.5" stroke="currentColor" stroke-width="1.3"/><circle cx="9" cy="9" r="1.2" fill="currentColor" opacity="0.4"/><line x1="9" y1="2" x2="9" y2="4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="9" y1="13.5" x2="9" y2="16" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="2" y1="9" x2="4.5" y2="9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="13.5" y1="9" x2="16" y2="9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="4.05" y1="4.05" x2="5.8" y2="5.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="12.2" y1="12.2" x2="13.95" y2="13.95" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="13.95" y1="4.05" x2="12.2" y2="5.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><line x1="5.8" y1="12.2" x2="4.05" y2="13.95" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></span>
+                  <div><strong>Kernel</strong><br><span id="adb-kernel-version" style="font-family:var(--mono); font-size:0.85em;">—</span></div>
+                </div>
+                <div id="adb-battery-pill" class="adb-storage-pill" style="display:none">
+                  <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="4" y="3.5" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="7" y="1.5" width="4" height="2.5" rx="0.8" stroke="currentColor" stroke-width="1"/><rect x="6" y="9" width="6" height="4.5" rx="0.5" fill="currentColor" opacity="0.2"/></svg></span>
+                  <div><strong data-i18n="adb.info.battery">Battery</strong><br><span id="adb-battery-info" style="font-family:var(--mono); font-size:0.85em;">—</span></div>
+                </div>
+              </div>
+              <!-- Row 3: Buttons -->
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+                <button class="btn btn-sm" id="adb-processes-btn" onclick="adbShowProcesses()">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="4.5" x2="13" y2="4.5" stroke="currentColor" stroke-width="0.8"/><line x1="5" y1="4.5" x2="5" y2="13" stroke="currentColor" stroke-width="0.8"/><circle cx="3" cy="7" r="0.6" fill="currentColor" opacity="0.5"/><circle cx="3" cy="9.5" r="0.6" fill="currentColor" opacity="0.5"/></svg>
+                  <span data-i18n="adb.btn.processes">Processes</span>
+                </button>
+                <button class="btn btn-sm" id="adb-dmesg-btn" onclick="adbShowDmesg()">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="4" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><line x1="4" y1="7.5" x2="10" y2="7.5" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><line x1="4" y1="10" x2="7" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.5"/></svg>
+                  <span data-i18n="adb.btn.dmesg">Kernel Log</span>
+                </button>
+                <div style="flex:1"></div>
+                <button class="btn btn-sm" id="adb-reboot-btn" onclick="adbReboot()">
+                  <span data-i18n="adb.btn.reboot">Reboot Device</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- File Browser -->
+            <div class="card">
+              <div class="card-title" data-i18n="adb.step2.title">File Browser</div>
+              <div id="adb-path-bar" style="display:flex; align-items:center; gap:8px; margin-bottom:10px">
+                <button class="btn btn-sm" onclick="adbNavigate('..')" id="adb-up-btn">↑</button>
+                <button class="btn btn-sm" id="adb-symlink-back-btn" onclick="adbSymlinkBack()" style="display:none;" title="Back to original path">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M11 7H4m0 0l3-3M4 7l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  ..
+                </button>
+                <code id="adb-cwd" style="flex:1; padding:6px 10px; border-radius:6px; background:var(--bg-input); font-size:0.85em">/</code>
+              </div>
+              <div id="adb-file-list" class="file-list adb-drop-zone" style="max-height:360px; overflow-y:auto; border-radius:8px; border:1px solid var(--border-subtle)"
+                   ondragover="adbDragOver(event)" ondragleave="adbDragLeave(event)" ondrop="adbDrop(event)">
+                <div class="empty-msg">…</div>
+              </div>
+              <div style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center">
+                <button class="btn" id="adb-push-btn" onclick="adbPushFile()">
+                  <span data-i18n="adb.btn.push">Push File</span>
+                </button>
+                <button class="btn" id="adb-pull-btn" onclick="adbPullSelected()" disabled>
+                  <span data-i18n="adb.btn.pull">Pull Selected</span>
+                </button>
+                <button class="btn btn-danger" id="adb-delete-btn" onclick="adbDeleteSelected()" style="display:none" disabled>
+                  <span data-i18n="adb.btn.delete">Delete</span>
+                </button>
+              </div>
+              <div id="adb-file-status" style="display:none; margin-top:10px; padding:8px 12px; border-radius:6px; font-size:0.85em; background:var(--bg-primary);"></div>
+            </div>
+
+            <!-- Screenshots -->
+            <div class="card">
+              <div class="card-title" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                <span data-i18n="adb.screenshots.title">Screenshots</span>
+                <button class="info-btn screenshot-help-btn" onclick="openScreenshotHelpModal()" title="Screenshot info" style="opacity:1;">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <circle cx="5" cy="5" r="4.2" stroke="currentColor" stroke-width="1.1"/>
+                    <text x="5" y="7.2" text-anchor="middle" font-size="6.5" font-weight="700" fill="currentColor" font-family="var(--font)">?</text>
+                  </svg>
+                </button>
+              </div>
+              <div class="card-desc" data-i18n="adb.screenshots.desc">Capture a screenshot from the device framebuffer.</div>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+                <button class="btn" id="adb-screenshot-btn" onclick="adbScreenshot()">
+                  <span data-i18n="adb.btn.screenshot">Take Screenshot</span>
+                </button>
+                <button class="btn btn-sm" id="adb-open-screenshots-btn" onclick="adbOpenScreenshotsFolder()">
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2 3h4l2 2h4v6H2V3z" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+                  <span data-i18n="adb.btn.openScreenshots">Open Folder</span>
+                </button>
+                <span id="adb-screenshot-status" style="font-size:0.85em; color:var(--text-muted)"></span>
+              </div>
+              <div id="adb-screenshots-grid" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;"></div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="card">
+              <div class="card-title" data-i18n="adb.terminal.title">Terminal</div>
+              <div id="adb-terminal" class="adb-terminal">
+                <div id="adb-terminal-output" class="adb-terminal-output"></div>
+                <div style="display:flex; gap:6px; align-items:center">
+                  <span class="adb-prompt" id="adb-terminal-prompt">/ $</span>
+                  <input type="text" id="adb-terminal-input" class="adb-terminal-input"
+                         placeholder="ls, cat, mount…"
+                         onkeydown="if(event.key==='Enter')adbTerminalRun()"
+                         spellcheck="false" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         <!-- ═══ PAGE: CREDITS ═══ -->
         <div id="page-credits" class="page">
           <div class="credits-section">
@@ -644,7 +954,113 @@
     </div>
   </div>
 
+  <!-- ═══ Screenshot Preview Modal ═══ -->
+  <div id="screenshot-modal" class="modal-overlay" style="display:none;" onclick="closeScreenshotModal(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="width:auto; max-width:90vw; text-align:center;">
+      <div class="modal-header">
+        <div class="modal-title" id="screenshot-modal-title">Screenshot</div>
+        <button class="modal-close" onclick="closeScreenshotModal()">&times;</button>
+      </div>
+      <div style="margin-top:12px;">
+        <img id="screenshot-modal-img" style="max-width:100%; max-height:65vh; border-radius:8px; border:1px solid var(--border);" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Dmesg Log Modal ═══ -->
+  <div id="dmesg-modal" class="modal-overlay" style="display:none;" onclick="closeDmesgModal(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="width:640px; max-width:92vw;">
+      <div class="modal-header">
+        <div class="modal-title">Kernel Log (dmesg)</div>
+        <button class="modal-close" onclick="closeDmesgModal()">&times;</button>
+      </div>
+      <div class="modal-desc">Device kernel ring buffer output.</div>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <button class="btn btn-sm" onclick="adbSaveDmesg()">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M11 8v3H3V8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M7 2v7M4 6l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="adb.btn.saveDmesg">Save to file</span>
+        </button>
+        <button class="btn btn-sm" onclick="adbRefreshDmesg()">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M11.5 7a4.5 4.5 0 1 1-1.3-3.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10.2 2v1.8H12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="adb.btn.refreshDmesg">Refresh</span>
+        </button>
+      </div>
+      <pre id="dmesg-output" class="dmesg-output"></pre>
+    </div>
+  </div>
+
+  <!-- ═══ Processes Modal ═══ -->
+  <div id="processes-modal" class="modal-overlay" style="display:none;" onclick="closeProcessesModal(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="width:720px; max-width:92vw;">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="adb.processes.title">Running Processes</div>
+        <button class="modal-close" onclick="closeProcessesModal()">&times;</button>
+      </div>
+      <div id="processes-sysinfo" style="display:none; margin-bottom:12px; padding:10px 14px; background:var(--bg-primary); border-radius:var(--radius-sm); font-family:var(--mono); font-size:11px; line-height:1.6; color:var(--text-secondary);"></div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+        <span id="processes-count" style="font-size:0.85em; color:var(--text-muted)"></span>
+      </div>
+      <div id="processes-table-wrap" style="max-height:440px; overflow-y:auto; border:1px solid var(--border); border-radius:var(--radius-sm);">
+        <table class="proc-table" id="processes-table">
+          <thead id="processes-thead"><tr></tr></thead>
+          <tbody id="processes-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Screenshot Help Modal ═══ -->
+  <div id="screenshot-help-modal" class="modal-overlay" style="display:none;" onclick="closeScreenshotHelpModal(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="width:560px; max-width:92vw;">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="adb.screenshots.help.title">Screenshot Glitches</div>
+        <button class="modal-close" onclick="closeScreenshotHelpModal()">&times;</button>
+      </div>
+      <div class="modal-desc" data-i18n="adb.screenshots.help.intro">Screenshots are captured from the Linux framebuffer (/dev/fb0). Some content is composited by the Ingenic IPU directly to the display, bypassing the framebuffer — this causes visual glitches.</div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--red);" data-i18n="adb.screenshots.help.affected">Affected screens (will show glitch lines):</div>
+        <div style="font-size:12px; color:var(--text-secondary); line-height:1.7; padding-left:6px; white-space:pre-line;">
+          <span data-i18n="adb.screenshots.help.affected.list">• Main launcher (app grid icons)
+• Music browser category grid (Albums, Artists, Genres…)
+• Album art thumbnails in list views
+• Now playing screen album art</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--green);" data-i18n="adb.screenshots.help.clean">Clean screens (capture perfectly):</div>
+        <div style="font-size:12px; color:var(--text-secondary); line-height:1.7; padding-left:6px; white-space:pre-line;">
+          <span data-i18n="adb.screenshots.help.clean.list">• All settings menus
+• Playback settings (MSEB, EQ, PEQ, filters)
+• Now playing UI chrome (without album art)
+• File browser (text list view)</span>
+        </div>
+      </div>
+
+      <div class="info-box-warn" style="font-size:12px; line-height:1.6;">
+        <strong data-i18n="adb.screenshots.help.theme.title">Theme note:</strong>
+        <span data-i18n="adb.screenshots.help.theme.desc">The Dark theme renders UI elements in pink/magenta in the framebuffer — this is not a capture artifact. Use Light theme for accurate colors.</span>
+      </div>
+
+      <div style="margin-top:14px; text-align:right;">
+        <a class="credits-link" style="font-size:12px; padding:6px 14px;" onclick="window.api.openExternal('https://github.com/hiby-modding/hiby-mods/blob/main/docs/SCREENSHOTS.md')">
+          <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 1.5C4.86 1.5 1.5 4.86 1.5 9c0 3.31 2.15 6.12 5.13 7.11.38.07.52-.16.52-.36v-1.26c-2.09.45-2.53-1.01-2.53-1.01-.34-.87-.83-1.1-.83-1.1-.68-.46.05-.45.05-.45.75.05 1.15.77 1.15.77.67 1.14 1.75.81 2.17.62.07-.48.26-.81.47-.99-1.67-.19-3.42-.83-3.42-3.71 0-.82.29-1.49.77-2.01-.08-.19-.33-.95.07-1.98 0 0 .63-.2 2.06.77a7.18 7.18 0 013.74 0c1.43-.97 2.06-.77 2.06-.77.4 1.03.15 1.79.07 1.98.48.53.77 1.2.77 2.01 0 2.89-1.76 3.52-3.43 3.71.27.23.51.69.51 1.39v2.07c0 .2.14.43.52.36A7.5 7.5 0 0016.5 9c0-4.14-3.36-7.5-7.5-7.5z" fill="currentColor"/></svg>
+          <span data-i18n="adb.screenshots.help.docs">Full documentation</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <script>
+
+    // SVG icon helpers (emoji replacements)
+    const SVG_OK = `<svg class="ico ico-ok" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="var(--green)" opacity="0.15" stroke="var(--green)" stroke-width="1.2"/><path d="M5 8.2l2 2 4-4.4" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const SVG_WARN = `<svg class="ico ico-warn" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L1.5 13.5h13L8 2z" fill="var(--accent)" opacity="0.15" stroke="var(--accent)" stroke-width="1.2" stroke-linejoin="round"/><line x1="8" y1="6.5" x2="8" y2="10" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.7" fill="var(--accent)"/></svg>`;
+    const SVG_ERR = `<svg class="ico ico-err" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="var(--red)" opacity="0.15" stroke="var(--red)" stroke-width="1.2"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    const SVG_TICK = `<svg class="ico ico-tick" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-7" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const SVG_WAIT = `<svg class="ico ico-wait" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 2h8v3.5L8.5 8 12 10.5V14H4v-3.5L7.5 8 4 5.5V2z" stroke="var(--accent)" stroke-width="1.2" stroke-linejoin="round"/><path d="M6 12.5h4" stroke="var(--accent)" stroke-width="1" stroke-linecap="round" opacity="0.5"/></svg>`;
+
     // ═══════════════════════════════════════════════
     // SETTINGS PANEL
     // ═══════════════════════════════════════════════
@@ -729,7 +1145,7 @@
         "fw.step5.title": "Generate Firmware",
         "fw.step5.desc": "Start the repack process. The r3proii.upt file will be generated in the project folder.",
         "fw.step5.btn": "Generate Firmware", "fw.running": "Generating…",
-        "fw.openFolder": "Open folder", "fw.success": "✅ Firmware generated successfully!",
+        "fw.openFolder": "Open folder", "fw.success": "Firmware generated successfully!",
         "db.step1.title": "SD Card",
         "db.step1.desc": "Select the SD card root of your HiBy DAP. Must contain the usrlocal_media.db file.",
         "db.noPath": "No path selected",
@@ -737,7 +1153,7 @@
         "db.embed.label": "Embed album art (360×360)", "db.embed.sub": "Resize and embed cover art into audio files",
         "db.resize.label": "Resize folder cover images", "db.resize.sub": "Resize cover.jpg, folder.jpg etc. to 360×360",
         "db.step3.title": "Update Database", "db.step3.desc": "Scan the SD card, read audio tags and rebuild usrlocal_media.db.",
-        "db.step3.btn": "Update Database", "db.running": "Updating…", "db.success": "✅ Database updated successfully!",
+        "db.step3.btn": "Update Database", "db.running": "Updating…", "db.success": "Database updated successfully!",
         "db.phase.scanning": "Scanning…", "db.phase.embedding": "Embedding album art…", "db.phase.reading": "Reading tags…",
         "db.phase.writing": "Writing database…", "db.phase.resizing": "Resizing covers…",
         "db.stat.files": "audio files", "db.stat.playlists": "playlists",
@@ -747,12 +1163,38 @@
         "db.stat.art_failures": "art errors", "db.stat.covers_resized": "covers resized",
         "db.stat.cover_resize_failures": "resize errors", "db.stat.tag_failures": "tag errors",
         "db.stat.found": "Found {files} audio files, {playlists} playlists",
-        "db.dbFound": "✓ usrlocal_media.db found", "db.dbNotFound": "⚠ usrlocal_media.db not found — script will search for it",
+        "db.dbFound": "usrlocal_media.db found", "db.dbNotFound": "usrlocal_media.db not found — script will search for it",
         "deps.title": "Dependencies", "deps.desc": "Status of the tools required by the scripts.",
         "deps.empty": "Click \"Check\" to verify", "deps.btn": "Check dependencies",
         "deps.bundled": "bundled", "deps.system": "system", "deps.installed": "installed", "deps.missing": "missing",
         "credits.sub": "Firmware modding tools for HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Credits",
+        "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "adb.status.idle": "Press Start to detect the device.",
+        "adb.status.checking": "Detecting…",
+        "adb.status.noAdb": "ADB not found. Install Android platform-tools.",
+        "adb.status.notFound": "No HiBy device found. Check the USB cable and ADB mode.",
+        "adb.status.connected": "Connected: {model}",
+        "adb.btn.start": "Start", "adb.btn.disconnect": "Disconnect",
+        "adb.btn.screenshot": "Take Screenshot", "adb.btn.reboot": "Reboot Device",
+        "adb.step2.title": "File Browser",
+        "adb.btn.push": "Push File", "adb.btn.pull": "Pull Selected", "adb.btn.delete": "Delete",
+        "adb.log.screenshot": "Screenshot saved: {path}", "adb.log.rebooting": "Rebooting device…",
+        "adb.storage.internal": "Internal Storage",
+        "adb.info.battery": "Battery",
+        "adb.screenshots.title": "Screenshots",
+        "adb.screenshots.desc": "Capture a screenshot from the device framebuffer.",
+        "adb.btn.openScreenshots": "Open Folder",
+        "adb.btn.processes": "Processes", "adb.processes.title": "Running Processes", "adb.btn.dmesg": "Kernel Log", "adb.btn.saveDmesg": "Save to file", "adb.btn.refreshDmesg": "Refresh", "adb.terminal.title": "Terminal",
+        "adb.screenshots.help.title": "Screenshot Glitches",
+        "adb.screenshots.help.intro": "Screenshots are captured from the Linux framebuffer (/dev/fb0). Some content is composited by the Ingenic IPU directly to the display, bypassing the framebuffer — this causes visual glitches.",
+        "adb.screenshots.help.affected": "Affected screens (will show glitch lines):",
+        "adb.screenshots.help.affected.list": "• Main launcher (app grid icons)\n• Music browser category grid (Albums, Artists, Genres…)\n• Album art thumbnails in list views\n• Now playing screen album art",
+        "adb.screenshots.help.clean": "Clean screens (capture perfectly):",
+        "adb.screenshots.help.clean.list": "• All settings menus\n• Playback settings (MSEB, EQ, PEQ, filters)\n• Now playing UI chrome (without album art)\n• File browser (text list view)",
+        "adb.screenshots.help.theme.title": "Theme note:",
+        "adb.screenshots.help.theme.desc": "The Dark theme renders UI elements in pink/magenta in the framebuffer — this is not a capture artifact. Use Light theme for accurate colors.",
+        "adb.screenshots.help.docs": "Full documentation",
       },
       it: {
         "nav.firmware": "Firmware Modder", "nav.database": "Database Updater",
@@ -769,7 +1211,7 @@
         "fw.step5.title": "Genera Firmware",
         "fw.step5.desc": "Avvia il processo di repack. Il file r3proii.upt verrà generato nella cartella del progetto.",
         "fw.step5.btn": "Genera Firmware", "fw.running": "Generazione in corso…",
-        "fw.openFolder": "Apri cartella", "fw.success": "✅ Firmware generato con successo!",
+        "fw.openFolder": "Apri cartella", "fw.success": "Firmware generato con successo!",
         "db.step1.title": "SD Card",
         "db.step1.desc": "Seleziona la root della SD card del tuo DAP HiBy. Deve contenere il file usrlocal_media.db.",
         "db.noPath": "Nessun percorso selezionato",
@@ -777,7 +1219,7 @@
         "db.embed.label": "Embed album art (360×360)", "db.embed.sub": "Ridimensiona e incorpora le copertine nei file audio",
         "db.resize.label": "Ridimensiona cover delle cartelle", "db.resize.sub": "Ridimensiona cover.jpg, folder.jpg ecc. a 360×360",
         "db.step3.title": "Aggiorna Database", "db.step3.desc": "Scansiona la SD card, legge i tag audio e ricostruisce usrlocal_media.db.",
-        "db.step3.btn": "Aggiorna Database", "db.running": "Aggiornamento in corso…", "db.success": "✅ Database aggiornato con successo!",
+        "db.step3.btn": "Aggiorna Database", "db.running": "Aggiornamento in corso…", "db.success": "Database aggiornato con successo!",
         "db.phase.scanning": "Scansione…", "db.phase.embedding": "Incorporamento copertine…", "db.phase.reading": "Lettura tag…",
         "db.phase.writing": "Scrittura database…", "db.phase.resizing": "Ridimensionamento copertine…",
         "db.stat.files": "file audio", "db.stat.playlists": "playlist",
@@ -787,12 +1229,39 @@
         "db.stat.art_failures": "errori copertine", "db.stat.covers_resized": "copertine ridimensionate",
         "db.stat.cover_resize_failures": "errori ridimensionamento", "db.stat.tag_failures": "errori tag",
         "db.stat.found": "Trovati {files} file audio, {playlists} playlist",
-        "db.dbFound": "✓ usrlocal_media.db trovato", "db.dbNotFound": "⚠ usrlocal_media.db non trovato — verrà cercato dallo script",
+        "db.dbFound": "usrlocal_media.db trovato", "db.dbNotFound": "usrlocal_media.db non trovato — verrà cercato dallo script",
         "deps.title": "Dipendenze", "deps.desc": "Lo stato dei tool necessari per il funzionamento degli script.",
         "deps.empty": "Clicca \"Verifica\" per controllare", "deps.btn": "Verifica dipendenze",
         "deps.bundled": "incluso nell'app", "deps.system": "di sistema", "deps.installed": "installato", "deps.missing": "mancante",
         "credits.sub": "Firmware modding tools per HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Crediti",
+        "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "adb.status.idle": "Premi Avvia per rilevare il dispositivo.",
+        "adb.status.checking": "Rilevamento…",
+        "adb.status.noAdb": "ADB non trovato. Installa Android platform-tools.",
+        "adb.status.notFound": "Nessun dispositivo HiBy trovato. Controlla il cavo USB e la modalità ADB.",
+        "adb.status.connected": "Connesso: {model}",
+        "adb.btn.start": "Avvia", "adb.btn.disconnect": "Disconnetti",
+        "adb.btn.screenshot": "Cattura Screenshot", "adb.btn.reboot": "Riavvia Dispositivo",
+        "adb.step2.title": "Esplora File",
+        "adb.btn.push": "Carica File", "adb.btn.pull": "Scarica Selezionato", "adb.btn.delete": "Elimina",
+        "adb.log.screenshot": "Screenshot salvato: {path}", "adb.log.rebooting": "Riavvio dispositivo…",
+        "adb.storage.internal": "Memoria Interna",
+        "adb.info.battery": "Batteria",
+        "adb.screenshots.title": "Screenshot",
+        "adb.screenshots.desc": "Cattura uno screenshot dal framebuffer del dispositivo.",
+        "adb.btn.openScreenshots": "Apri Cartella",
+        "adb.btn.processes": "Processi", "adb.processes.title": "Processi in Esecuzione", "adb.btn.processes": "Processus", "adb.processes.title": "Processus en cours", "adb.btn.processes": "Procesos", "adb.processes.title": "Procesos en ejecución", "adb.btn.dmesg": "Log Kernel", "adb.btn.saveDmesg": "Salva su file", "adb.btn.refreshDmesg": "Aggiorna",
+        "adb.terminal.title": "Terminale",
+        "adb.screenshots.help.title": "Glitch negli Screenshot",
+        "adb.screenshots.help.intro": "Gli screenshot vengono catturati dal framebuffer Linux (/dev/fb0). Alcuni contenuti vengono compositi dall'IPU Ingenic direttamente sul display, bypassando il framebuffer — questo causa glitch visivi.",
+        "adb.screenshots.help.affected": "Schermate con glitch (linee corrotte):",
+        "adb.screenshots.help.affected.list": "• Launcher principale (griglia icone app)\n• Griglia categorie browser musicale (Album, Artisti, Generi…)\n• Miniature album art nelle liste\n• Album art nella schermata di riproduzione",
+        "adb.screenshots.help.clean": "Schermate pulite (cattura perfetta):",
+        "adb.screenshots.help.clean.list": "• Tutti i menu impostazioni\n• Impostazioni riproduzione (MSEB, EQ, PEQ, filtri)\n• UI riproduzione (senza album art)\n• Browser file (vista lista)",
+        "adb.screenshots.help.theme.title": "Nota sul tema:",
+        "adb.screenshots.help.theme.desc": "Il tema Scuro mostra gli elementi UI in rosa/magenta nel framebuffer — non è un artefatto della cattura. Usa il tema Chiaro per colori accurati.",
+        "adb.screenshots.help.docs": "Documentazione completa",
       },
       de: {
         "nav.firmware": "Firmware Modder", "nav.database": "Datenbank Updater",
@@ -809,7 +1278,7 @@
         "fw.step5.title": "Firmware generieren",
         "fw.step5.desc": "Starte den Repack-Prozess. Die Datei r3proii.upt wird im Projektordner erzeugt.",
         "fw.step5.btn": "Firmware generieren", "fw.running": "Wird generiert…",
-        "fw.openFolder": "Ordner öffnen", "fw.success": "✅ Firmware erfolgreich generiert!",
+        "fw.openFolder": "Ordner öffnen", "fw.success": "Firmware erfolgreich generiert!",
         "db.step1.title": "SD-Karte",
         "db.step1.desc": "Wähle das Stammverzeichnis der SD-Karte deines HiBy DAP. Muss usrlocal_media.db enthalten.",
         "db.noPath": "Kein Pfad ausgewählt",
@@ -817,7 +1286,7 @@
         "db.embed.label": "Album-Cover einbetten (360×360)", "db.embed.sub": "Cover in Audiodateien einbetten",
         "db.resize.label": "Ordner-Cover skalieren", "db.resize.sub": "cover.jpg, folder.jpg usw. auf 360×360 skalieren",
         "db.step3.title": "Datenbank aktualisieren", "db.step3.desc": "SD-Karte scannen, Audio-Tags lesen und usrlocal_media.db neu aufbauen.",
-        "db.step3.btn": "Datenbank aktualisieren", "db.running": "Wird aktualisiert…", "db.success": "✅ Datenbank erfolgreich aktualisiert!",
+        "db.step3.btn": "Datenbank aktualisieren", "db.running": "Wird aktualisiert…", "db.success": "Datenbank erfolgreich aktualisiert!",
         "db.phase.scanning": "Scannen…", "db.phase.embedding": "Cover einbetten…", "db.phase.reading": "Tags lesen…",
         "db.phase.writing": "Datenbank schreiben…", "db.phase.resizing": "Cover skalieren…",
         "db.stat.files": "Audiodateien", "db.stat.playlists": "Playlists",
@@ -827,12 +1296,38 @@
         "db.stat.art_failures": "Cover-Fehler", "db.stat.covers_resized": "Cover skaliert",
         "db.stat.cover_resize_failures": "Skalierungsfehler", "db.stat.tag_failures": "Tag-Fehler",
         "db.stat.found": "{files} Audiodateien, {playlists} Playlists gefunden",
-        "db.dbFound": "✓ usrlocal_media.db gefunden", "db.dbNotFound": "⚠ usrlocal_media.db nicht gefunden — Skript sucht danach",
+        "db.dbFound": "usrlocal_media.db gefunden", "db.dbNotFound": "usrlocal_media.db nicht gefunden — Skript sucht danach",
         "deps.title": "Abhängigkeiten", "deps.desc": "Status der benötigten Tools.",
         "deps.empty": "Klicke \"Prüfen\" zum Verifizieren", "deps.btn": "Abhängigkeiten prüfen",
         "deps.bundled": "gebündelt", "deps.system": "System", "deps.installed": "installiert", "deps.missing": "fehlt",
         "credits.sub": "Firmware-Modding-Tools für HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Datenbank Updater", "title.credits": "Credits",
+        "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "adb.status.idle": "Starten drücken um das Gerät zu erkennen.",
+        "adb.status.checking": "Erkennung…",
+        "adb.status.noAdb": "ADB nicht gefunden. Android platform-tools installieren.",
+        "adb.status.notFound": "Kein HiBy-Gerät gefunden. USB-Kabel und ADB-Modus prüfen.",
+        "adb.status.connected": "Verbunden: {model}",
+        "adb.btn.start": "Starten", "adb.btn.disconnect": "Trennen",
+        "adb.btn.screenshot": "Screenshot aufnehmen", "adb.btn.reboot": "Gerät neustarten",
+        "adb.step2.title": "Dateibrowser",
+        "adb.btn.push": "Datei senden", "adb.btn.pull": "Auswahl laden", "adb.btn.delete": "Löschen",
+        "adb.log.screenshot": "Screenshot gespeichert: {path}", "adb.log.rebooting": "Gerät wird neugestartet…",
+        "adb.storage.internal": "Interner Speicher",
+        "adb.info.battery": "Akku",
+        "adb.screenshots.title": "Screenshots",
+        "adb.screenshots.desc": "Screenshot vom Gerät-Framebuffer aufnehmen.",
+        "adb.btn.openScreenshots": "Ordner öffnen",
+        "adb.btn.processes": "Prozesse", "adb.processes.title": "Laufende Prozesse", "adb.btn.dmesg": "Kernel-Log", "adb.btn.saveDmesg": "Speichern", "adb.btn.refreshDmesg": "Aktualisieren", "adb.terminal.title": "Terminal",
+        "adb.screenshots.help.title": "Screenshot-Glitches",
+        "adb.screenshots.help.intro": "Screenshots werden vom Linux-Framebuffer (/dev/fb0) erfasst. Einige Inhalte werden von der Ingenic IPU direkt auf das Display gerendert und umgehen den Framebuffer — dies verursacht visuelle Glitches.",
+        "adb.screenshots.help.affected": "Betroffene Bildschirme (Glitch-Linien):",
+        "adb.screenshots.help.affected.list": "• Hauptlauncher (App-Raster)\n• Musik-Browser Kategorie-Raster (Alben, Künstler, Genres…)\n• Album-Art-Vorschaubilder in Listen\n• Album-Art auf dem Wiedergabebildschirm",
+        "adb.screenshots.help.clean": "Saubere Bildschirme (perfekte Aufnahme):",
+        "adb.screenshots.help.clean.list": "• Alle Einstellungsmenüs\n• Wiedergabe-Einstellungen (MSEB, EQ, PEQ, Filter)\n• Wiedergabe-UI (ohne Album-Art)\n• Dateibrowser (Listenansicht)",
+        "adb.screenshots.help.theme.title": "Hinweis zum Theme:",
+        "adb.screenshots.help.theme.desc": "Das Dark-Theme rendert UI-Elemente im Framebuffer in Pink/Magenta — das ist kein Aufnahmefehler. Verwende das Light-Theme für korrekte Farben.",
+        "adb.screenshots.help.docs": "Vollständige Dokumentation",
       },
       fr: {
         "nav.firmware": "Firmware Modder", "nav.database": "Mise à jour BDD",
@@ -849,7 +1344,7 @@
         "fw.step5.title": "Générer le firmware",
         "fw.step5.desc": "Lancer le processus de repack. Le fichier r3proii.upt sera généré dans le dossier du projet.",
         "fw.step5.btn": "Générer le firmware", "fw.running": "Génération en cours…",
-        "fw.openFolder": "Ouvrir le dossier", "fw.success": "✅ Firmware généré avec succès !",
+        "fw.openFolder": "Ouvrir le dossier", "fw.success": "Firmware généré avec succès !",
         "db.step1.title": "Carte SD",
         "db.step1.desc": "Sélectionnez la racine de la carte SD de votre DAP HiBy. Doit contenir usrlocal_media.db.",
         "db.noPath": "Aucun chemin sélectionné",
@@ -857,7 +1352,7 @@
         "db.embed.label": "Intégrer les pochettes (360×360)", "db.embed.sub": "Redimensionner et intégrer les pochettes dans les fichiers audio",
         "db.resize.label": "Redimensionner les images de dossier", "db.resize.sub": "Redimensionner cover.jpg, folder.jpg etc. à 360×360",
         "db.step3.title": "Mettre à jour la BDD", "db.step3.desc": "Scanner la carte SD, lire les tags audio et reconstruire usrlocal_media.db.",
-        "db.step3.btn": "Mettre à jour la BDD", "db.running": "Mise à jour en cours…", "db.success": "✅ Base de données mise à jour avec succès !",
+        "db.step3.btn": "Mettre à jour la BDD", "db.running": "Mise à jour en cours…", "db.success": "Base de données mise à jour avec succès !",
         "db.phase.scanning": "Analyse…", "db.phase.embedding": "Intégration des pochettes…", "db.phase.reading": "Lecture des tags…",
         "db.phase.writing": "Écriture de la BDD…", "db.phase.resizing": "Redimensionnement…",
         "db.stat.files": "fichiers audio", "db.stat.playlists": "playlists",
@@ -867,12 +1362,38 @@
         "db.stat.art_failures": "erreurs pochettes", "db.stat.covers_resized": "pochettes redim.",
         "db.stat.cover_resize_failures": "erreurs redim.", "db.stat.tag_failures": "erreurs tags",
         "db.stat.found": "{files} fichiers audio, {playlists} playlists trouvés",
-        "db.dbFound": "✓ usrlocal_media.db trouvé", "db.dbNotFound": "⚠ usrlocal_media.db non trouvé — le script le cherchera",
+        "db.dbFound": "usrlocal_media.db trouvé", "db.dbNotFound": "usrlocal_media.db non trouvé — le script le cherchera",
         "deps.title": "Dépendances", "deps.desc": "État des outils requis par les scripts.",
         "deps.empty": "Cliquez \"Vérifier\" pour contrôler", "deps.btn": "Vérifier les dépendances",
         "deps.bundled": "inclus", "deps.system": "système", "deps.installed": "installé", "deps.missing": "manquant",
         "credits.sub": "Outils de modding firmware pour HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Mise à jour BDD", "title.credits": "Crédits",
+        "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "adb.status.idle": "Appuyez sur Démarrer pour détecter l'appareil.",
+        "adb.status.checking": "Détection…",
+        "adb.status.noAdb": "ADB non trouvé. Installez Android platform-tools.",
+        "adb.status.notFound": "Aucun appareil HiBy trouvé. Vérifiez le câble USB et le mode ADB.",
+        "adb.status.connected": "Connecté : {model}",
+        "adb.btn.start": "Démarrer", "adb.btn.disconnect": "Déconnecter",
+        "adb.btn.screenshot": "Capture d'écran", "adb.btn.reboot": "Redémarrer",
+        "adb.step2.title": "Explorateur de fichiers",
+        "adb.btn.push": "Envoyer fichier", "adb.btn.pull": "Télécharger", "adb.btn.delete": "Supprimer",
+        "adb.log.screenshot": "Capture enregistrée : {path}", "adb.log.rebooting": "Redémarrage…",
+        "adb.storage.internal": "Stockage Interne",
+        "adb.info.battery": "Batterie",
+        "adb.screenshots.title": "Captures d'écran",
+        "adb.screenshots.desc": "Capturer une image depuis le framebuffer de l'appareil.",
+        "adb.btn.openScreenshots": "Ouvrir le dossier",
+        "adb.btn.processes": "Processi", "adb.processes.title": "Processi in Esecuzione", "adb.btn.processes": "Processus", "adb.processes.title": "Processus en cours", "adb.btn.processes": "Procesos", "adb.processes.title": "Procesos en ejecución", "adb.btn.dmesg": "Log Kernel", "adb.btn.saveDmesg": "Enregistrer", "adb.btn.refreshDmesg": "Actualiser", "adb.terminal.title": "Terminal",
+        "adb.screenshots.help.title": "Glitches dans les captures",
+        "adb.screenshots.help.intro": "Les captures sont prises depuis le framebuffer Linux (/dev/fb0). Certains contenus sont composités par l'IPU Ingenic directement sur l'écran, contournant le framebuffer — cela provoque des glitches visuels.",
+        "adb.screenshots.help.affected": "Écrans affectés (lignes de glitch) :",
+        "adb.screenshots.help.affected.list": "• Lanceur principal (grille d'icônes)\n• Grille de catégories musicales (Albums, Artistes, Genres…)\n• Miniatures d'album art dans les listes\n• Album art sur l'écran de lecture",
+        "adb.screenshots.help.clean": "Écrans propres (capture parfaite) :",
+        "adb.screenshots.help.clean.list": "• Tous les menus de paramètres\n• Paramètres de lecture (MSEB, EQ, PEQ, filtres)\n• Interface de lecture (sans album art)\n• Navigateur de fichiers (vue liste)",
+        "adb.screenshots.help.theme.title": "Note sur le thème :",
+        "adb.screenshots.help.theme.desc": "Le thème Sombre rend les éléments UI en rose/magenta dans le framebuffer — ce n'est pas un artefact. Utilisez le thème Clair pour des couleurs précises.",
+        "adb.screenshots.help.docs": "Documentation complète",
       },
       es: {
         "nav.firmware": "Firmware Modder", "nav.database": "Actualizar BD",
@@ -889,7 +1410,7 @@
         "fw.step5.title": "Generar firmware",
         "fw.step5.desc": "Iniciar el proceso de repack. El archivo r3proii.upt se generará en la carpeta del proyecto.",
         "fw.step5.btn": "Generar firmware", "fw.running": "Generando…",
-        "fw.openFolder": "Abrir carpeta", "fw.success": "✅ ¡Firmware generado con éxito!",
+        "fw.openFolder": "Abrir carpeta", "fw.success": "¡Firmware generado con éxito!",
         "db.step1.title": "Tarjeta SD",
         "db.step1.desc": "Selecciona la raíz de la tarjeta SD de tu DAP HiBy. Debe contener usrlocal_media.db.",
         "db.noPath": "Ninguna ruta seleccionada",
@@ -897,7 +1418,7 @@
         "db.embed.label": "Incrustar carátula (360×360)", "db.embed.sub": "Redimensionar e incrustar carátulas en archivos de audio",
         "db.resize.label": "Redimensionar imágenes de carpeta", "db.resize.sub": "Redimensionar cover.jpg, folder.jpg etc. a 360×360",
         "db.step3.title": "Actualizar base de datos", "db.step3.desc": "Escanear la tarjeta SD, leer etiquetas de audio y reconstruir usrlocal_media.db.",
-        "db.step3.btn": "Actualizar BD", "db.running": "Actualizando…", "db.success": "✅ ¡Base de datos actualizada con éxito!",
+        "db.step3.btn": "Actualizar BD", "db.running": "Actualizando…", "db.success": "¡Base de datos actualizada con éxito!",
         "db.phase.scanning": "Escaneando…", "db.phase.embedding": "Incrustando carátulas…", "db.phase.reading": "Leyendo etiquetas…",
         "db.phase.writing": "Escribiendo base de datos…", "db.phase.resizing": "Redimensionando…",
         "db.stat.files": "archivos de audio", "db.stat.playlists": "playlists",
@@ -907,12 +1428,38 @@
         "db.stat.art_failures": "errores carátulas", "db.stat.covers_resized": "carátulas redim.",
         "db.stat.cover_resize_failures": "errores redim.", "db.stat.tag_failures": "errores etiquetas",
         "db.stat.found": "{files} archivos de audio, {playlists} playlists encontrados",
-        "db.dbFound": "✓ usrlocal_media.db encontrado", "db.dbNotFound": "⚠ usrlocal_media.db no encontrado — el script lo buscará",
+        "db.dbFound": "usrlocal_media.db encontrado", "db.dbNotFound": "usrlocal_media.db no encontrado — el script lo buscará",
         "deps.title": "Dependencias", "deps.desc": "Estado de las herramientas requeridas por los scripts.",
         "deps.empty": "Haz clic en \"Verificar\" para comprobar", "deps.btn": "Verificar dependencias",
         "deps.bundled": "incluido", "deps.system": "sistema", "deps.installed": "instalado", "deps.missing": "falta",
         "credits.sub": "Herramientas de modding de firmware para HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Actualizar BD", "title.credits": "Créditos",
+        "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "adb.status.idle": "Pulsa Iniciar para detectar el dispositivo.",
+        "adb.status.checking": "Detectando…",
+        "adb.status.noAdb": "ADB no encontrado. Instala Android platform-tools.",
+        "adb.status.notFound": "Ningún dispositivo HiBy encontrado. Revisa el cable USB y el modo ADB.",
+        "adb.status.connected": "Conectado: {model}",
+        "adb.btn.start": "Iniciar", "adb.btn.disconnect": "Desconectar",
+        "adb.btn.screenshot": "Captura", "adb.btn.reboot": "Reiniciar Dispositivo",
+        "adb.step2.title": "Explorador de Archivos",
+        "adb.btn.push": "Enviar Archivo", "adb.btn.pull": "Descargar", "adb.btn.delete": "Eliminar",
+        "adb.log.screenshot": "Captura guardada: {path}", "adb.log.rebooting": "Reiniciando…",
+        "adb.storage.internal": "Almac. Interno",
+        "adb.info.battery": "Batería",
+        "adb.screenshots.title": "Capturas",
+        "adb.screenshots.desc": "Capturar una imagen desde el framebuffer del dispositivo.",
+        "adb.btn.openScreenshots": "Abrir carpeta",
+        "adb.btn.processes": "Processi", "adb.processes.title": "Processi in Esecuzione", "adb.btn.processes": "Processus", "adb.processes.title": "Processus en cours", "adb.btn.processes": "Procesos", "adb.processes.title": "Procesos en ejecución", "adb.btn.dmesg": "Log Kernel", "adb.btn.saveDmesg": "Guardar", "adb.btn.refreshDmesg": "Actualizar", "adb.terminal.title": "Terminal",
+        "adb.screenshots.help.title": "Glitches en capturas",
+        "adb.screenshots.help.intro": "Las capturas se toman desde el framebuffer Linux (/dev/fb0). Parte del contenido es compuesto por la IPU Ingenic directamente en la pantalla, sin pasar por el framebuffer — esto causa glitches visuales.",
+        "adb.screenshots.help.affected": "Pantallas afectadas (líneas de glitch):",
+        "adb.screenshots.help.affected.list": "• Lanzador principal (cuadrícula de iconos)\n• Cuadrícula de categorías musicales (Álbumes, Artistas, Géneros…)\n• Miniaturas de album art en listas\n• Album art en la pantalla de reproducción",
+        "adb.screenshots.help.clean": "Pantallas limpias (captura perfecta):",
+        "adb.screenshots.help.clean.list": "• Todos los menús de ajustes\n• Ajustes de reproducción (MSEB, EQ, PEQ, filtros)\n• UI de reproducción (sin album art)\n• Explorador de archivos (vista lista)",
+        "adb.screenshots.help.theme.title": "Nota sobre el tema:",
+        "adb.screenshots.help.theme.desc": "El tema Oscuro muestra los elementos UI en rosa/magenta en el framebuffer — no es un artefacto. Usa el tema Claro para colores precisos.",
+        "adb.screenshots.help.docs": "Documentación completa",
       }
     };
 
@@ -1103,10 +1650,10 @@
       const resultDiv = document.getElementById("fw-result");
       if (result.success) {
         state.fwOutputPath = result.outputPath;
-        resultDiv.innerHTML = `<div class="result-banner success">${t("fw.success")}</div>`;
+        resultDiv.innerHTML = `<div class="result-banner success">${SVG_OK} ${t("fw.success")}</div>`;
         document.getElementById("fw-open-btn").style.display = "";
       } else {
-        resultDiv.innerHTML = `<div class="result-banner error">❌ ${result.error}</div>`;
+        resultDiv.innerHTML = `<div class="result-banner error">${SVG_ERR} ${result.error}</div>`;
       }
     }
 
@@ -1124,8 +1671,8 @@
       const hasDb = await window.api.pathExists(dir + "/usrlocal_media.db");
       state.sdHasDb = hasDb;
       document.getElementById("db-sd-status").innerHTML = hasDb
-        ? `<span class="badge badge-ok">${t("db.dbFound")}</span>`
-        : `<span class="badge badge-warn">${t("db.dbNotFound")}</span>`;
+        ? `<span class="badge badge-ok">${SVG_TICK} ${t("db.dbFound")}</span>`
+        : `<span class="badge badge-warn">${SVG_WARN} ${t("db.dbNotFound")}</span>`;
       updateDbRunBtn();
     }
 
@@ -1238,7 +1785,7 @@
 
       const resultDiv = document.getElementById("db-result");
       if (result.success) {
-        resultDiv.innerHTML = `<div class="result-banner success">${t("db.success")}</div>`;
+        resultDiv.innerHTML = `<div class="result-banner success">${SVG_OK} ${t("db.success")}</div>`;
 
         if (Object.keys(summaryData).length > 0) {
           const summaryDiv = document.getElementById("db-summary");
@@ -1258,7 +1805,7 @@
           summaryDiv.innerHTML = html;
         }
       } else {
-        resultDiv.innerHTML = `<div class="result-banner error">❌ ${result.error}</div>`;
+        resultDiv.innerHTML = `<div class="result-banner error">${SVG_ERR} ${result.error}</div>`;
       }
     }
 
@@ -1293,6 +1840,826 @@
       if (event && event.target !== event.currentTarget) return;
       document.getElementById("deps-modal").style.display = "none";
     }
+
+
+    // ═══════════════════════════════════════════════
+    // ADB MANAGER
+    // ═══════════════════════════════════════════════
+
+    const ADB_SD_PATH = "/usr/data/mnt/sd_0";
+    let adbConnected = false;
+    let adbCwd = "/";
+    let adbSelectedFiles = new Set();
+    let adbNavHistory = []; // stack of previous directories for going "up"
+    let adbSymlinkOrigin = null; // set when we entered a symlink-resolved dir
+    let adbTerminalHistory = [];
+    let adbHistoryIdx = -1;
+
+    function adbSetConnected(connected) {
+      adbConnected = connected;
+      document.getElementById("adb-connected-section").style.display = connected ? "" : "none";
+      const btn = document.getElementById("adb-start-btn");
+      if (connected) {
+        btn.textContent = t("adb.btn.disconnect") || "Disconnect";
+      } else {
+        btn.innerHTML = `<span data-i18n="adb.btn.start">${t("adb.btn.start")}</span>`;
+      }
+    }
+
+    function adbUpdateDeleteBtn() {
+      const btn = document.getElementById("adb-delete-btn");
+      const canDelete = adbCwd.startsWith(ADB_SD_PATH) && adbSelectedFiles.size > 0;
+      btn.style.display = adbCwd.startsWith(ADB_SD_PATH) ? "" : "none";
+      btn.disabled = !canDelete;
+    }
+
+    async function adbStart() {
+      if (adbConnected) {
+        adbSetConnected(false);
+        document.getElementById("adb-status").textContent = t("adb.status.idle");
+        return;
+      }
+      const statusEl = document.getElementById("adb-status");
+      statusEl.textContent = t("adb.status.checking");
+
+      const check = await window.api.adbCheck();
+      if (!check.available) { statusEl.innerHTML = `<span class="adb-error-box">${SVG_ERR} ${t("adb.status.noAdb")}</span>`; return; }
+
+      const detect = await window.api.adbDetect();
+      if (!detect.connected) { statusEl.innerHTML = `<span class="adb-error-box">${SVG_ERR} ${t("adb.status.notFound")}</span>`; return; }
+
+      statusEl.innerHTML = `<span class="adb-connected-box">${SVG_OK} ${t("adb.status.connected").replace("{model}", detect.model)}</span>`;
+      adbSetConnected(true);
+
+      // Firmware & kernel version
+      if (detect.fwVersion) {
+        document.getElementById("adb-fw-version").textContent = detect.fwVersion;
+        document.getElementById("adb-fw-pill").style.display = "";
+      }
+      if (detect.kernelVersion) {
+        document.getElementById("adb-kernel-version").textContent = detect.kernelVersion;
+        document.getElementById("adb-kernel-pill").style.display = "";
+      }
+      if (detect.battery) {
+        document.getElementById("adb-battery-info").textContent = detect.battery.capacity + "% · " + detect.battery.health;
+        document.getElementById("adb-battery-pill").style.display = "";
+      }
+
+      // Storage info
+      const storage = await window.api.adbStorageInfo();
+      if (storage.ok) {
+        if (storage.sd) {
+          document.getElementById("adb-storage-sd-size").textContent = `${storage.sd.used || "?"} / ${storage.sd.size || "?"}`;
+        }
+        if (storage.internal) {
+          const romTotal = storage.romTotal || storage.internal.size || "?";
+          document.getElementById("adb-storage-internal-size").textContent = `${storage.internal.used || "?"} / ${romTotal}`;
+        }
+        if (storage.ram) {
+          document.getElementById("adb-storage-ram").style.display = "";
+          document.getElementById("adb-storage-ram-size").textContent = `${storage.ram.used || "?"} / ${storage.ram.total || "?"}`;
+        }
+      }
+
+      adbCwd = "/";
+      adbNavHistory = [];
+      adbSymlinkOrigin = null;
+      adbUpdateSymlinkBtn();
+      adbRefreshFiles();
+      adbRefreshScreenshots();
+    }
+
+    function adbGoToSd() {
+      if (!adbConnected) return;
+      adbNavHistory = [];
+      adbSymlinkOrigin = null;
+      adbUpdateSymlinkBtn();
+      adbCwd = ADB_SD_PATH;
+      adbRefreshFiles();
+    }
+
+    function adbGoToInternal() {
+      if (!adbConnected) return;
+      adbNavHistory = [];
+      adbSymlinkOrigin = null;
+      adbUpdateSymlinkBtn();
+      adbCwd = "/usr";
+      adbRefreshFiles();
+    }
+
+    // Drag & drop
+    function adbDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.currentTarget.classList.add("drag-over");
+    }
+    function adbDragLeave(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.currentTarget.classList.remove("drag-over");
+    }
+    async function adbDrop(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.currentTarget.classList.remove("drag-over");
+      if (!adbConnected) return;
+
+      const files = e.dataTransfer.files;
+      if (!files || files.length === 0) return;
+
+      adbListenTransfer();
+      for (const file of files) {
+        const localPath = file.path;
+        if (!localPath) continue;
+        const fileName = localPath.split(/[/\\]/).pop();
+        const remoteDest = adbCwd + "/" + fileName;
+        adbFileStatus(SVG_WAIT + " Pushing " + fileName + "…", false, true);
+        document.getElementById("adb-file-status").style.color = "var(--accent)";
+        const result = await window.api.adbPush(localPath, remoteDest);
+        if (result.ok) {
+          adbFileStatus(SVG_OK + " Pushed " + fileName, false, true);
+        } else {
+          adbFileStatus(SVG_ERR + " Failed to push " + fileName + ": " + result.error, true, true);
+        }
+      }
+      adbRefreshFiles();
+    }
+
+    // File type icons (SVG)
+    const adbIconFolder = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h5l1.5 1.5H14v8H2V4z" stroke="currentColor" stroke-width="1.2" fill="currentColor" opacity="0.15"/></svg>';
+    const adbIconFile = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="1.5" width="10" height="13" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>';
+    const adbIconText = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="1.5" width="10" height="13" rx="1" stroke="currentColor" stroke-width="1.2"/><line x1="5.5" y1="5" x2="10.5" y2="5" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><line x1="5.5" y1="7.5" x2="10.5" y2="7.5" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><line x1="5.5" y1="10" x2="8.5" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.5"/></svg>';
+    const adbIconAudio = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="11" r="2.2" stroke="currentColor" stroke-width="1.2"/><line x1="8.2" y1="11" x2="8.2" y2="3" stroke="currentColor" stroke-width="1.2"/><path d="M8.2 3l4 1.5v2l-4-1.5" fill="currentColor" opacity="0.4"/></svg>';
+    const adbIconImage = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="2.5" width="11" height="11" rx="1" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="1.5" fill="currentColor" opacity="0.4"/><path d="M2.5 11l3-3 2 2 2.5-3L13.5 11" stroke="currentColor" stroke-width="1" opacity="0.5"/></svg>';
+    const adbIconDb = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="4.5" rx="5" ry="2" stroke="currentColor" stroke-width="1.2"/><path d="M3 4.5v3c0 1.1 2.24 2 5 2s5-.9 5-2v-3" stroke="currentColor" stroke-width="1.2"/><path d="M3 7.5v3c0 1.1 2.24 2 5 2s5-.9 5-2v-3" stroke="currentColor" stroke-width="1.2"/></svg>';
+    const adbIconArchive = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1.2"/><line x1="7" y1="3" x2="7" y2="9" stroke="currentColor" stroke-width="1"/><line x1="9" y1="3" x2="9" y2="9" stroke="currentColor" stroke-width="1"/><rect x="6.5" y="9" width="3" height="2" rx="0.5" stroke="currentColor" stroke-width="0.8"/></svg>';
+    const adbIconBinary = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="1.5" width="10" height="13" rx="1" stroke="currentColor" stroke-width="1.2"/><text x="8" y="10" text-anchor="middle" font-size="6" font-family="monospace" fill="currentColor" opacity="0.6">01</text></svg>';
+    const adbIconConfig = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="2" x2="8" y2="4.5" stroke="currentColor" stroke-width="1.1"/><line x1="8" y1="11.5" x2="8" y2="14" stroke="currentColor" stroke-width="1.1"/><line x1="2" y1="8" x2="4.5" y2="8" stroke="currentColor" stroke-width="1.1"/><line x1="11.5" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.1"/></svg>';
+    const adbIconVideo = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3.5" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 6v4l3.5-2-3.5-2z" fill="currentColor" opacity="0.5"/></svg>';
+
+    const FILE_TYPE_MAP = {
+      audio: /\.(mp3|flac|wav|aac|ogg|ape|wma|m4a|dsd|dsf|dff|aiff|aif|wv|opus|alac|mqa)$/i,
+      image: /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|tif|tiff)$/i,
+      text: /\.(txt|log|md|csv|ini|cfg|conf|sh|bat|py|js|html|css|xml|yaml|yml)$/i,
+      db: /\.(db|sqlite|sqlite3|mdb)$/i,
+      archive: /\.(zip|tar|gz|bz2|xz|7z|rar|iso|upt|squashfs)$/i,
+      binary: /\.(bin|fw|img|raw|hex|so|dll|exe|elf|o)$/i,
+      config: /\.(json|plist|properties|env|toml)$/i,
+      video: /\.(mp4|mkv|avi|mov|wmv|flv|webm|m4v|mpg|mpeg|ts)$/i,
+    };
+
+    function adbFileType(name) {
+      for (const [type, re] of Object.entries(FILE_TYPE_MAP)) {
+        if (re.test(name)) return type;
+      }
+      return "generic";
+    }
+
+    function adbFileIcon(name) {
+      const type = adbFileType(name);
+      switch (type) {
+        case "audio": return adbIconAudio;
+        case "image": return adbIconImage;
+        case "text": return adbIconText;
+        case "db": return adbIconDb;
+        case "archive": return adbIconArchive;
+        case "binary": return adbIconBinary;
+        case "config": return adbIconConfig;
+        case "video": return adbIconVideo;
+        default: return adbIconFile;
+      }
+    }
+
+    async function adbRefreshFiles() {
+      const listEl = document.getElementById("adb-file-list");
+      document.getElementById("adb-cwd").textContent = adbCwd;
+      adbSelectedFiles.clear();
+      document.getElementById("adb-pull-btn").disabled = true;
+      adbUpdateDeleteBtn();
+
+      listEl.innerHTML = `<div class="empty-msg">…</div>`;
+      const result = await window.api.adbLs(adbCwd);
+      if (!result.ok) { listEl.innerHTML = `<div class="empty-msg">${SVG_WARN} ${result.error}</div>`; return; }
+
+      let rows = "";
+
+      if (result.entries.length === 0) {
+        listEl.innerHTML = `<div class="empty-msg">(empty)</div>`;
+        return;
+      }
+
+      rows += result.entries.map(e => {
+        const icon = e.isDir ? adbIconFolder : adbFileIcon(e.name);
+        const size = e.isDir ? "" : formatSize(e.size);
+        const s = e.name.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+        const typeCls = e.isDir ? " file-dir" : (" file-type-" + adbFileType(e.name));
+        return `<div class="file-row${typeCls}" data-name="${s}" data-isdir="${e.isDir}" onclick="adbSelectFile(this, event)" ondblclick="adbDblClick(this)">
+          <span class="file-icon">${icon}</span><span class="file-name">${s}</span><span class="file-size">${size}</span><span class="file-date">${e.date}</span></div>`;
+      }).join("");
+
+      listEl.innerHTML = rows;
+    }
+
+    function formatSize(b) {
+      if (b < 1024) return b + " B";
+      if (b < 1048576) return (b / 1024).toFixed(1) + " KB";
+      if (b < 1073741824) return (b / 1048576).toFixed(1) + " MB";
+      return (b / 1073741824).toFixed(2) + " GB";
+    }
+
+    function adbSelectFile(el, event) {
+      const multi = event && (event.metaKey || event.ctrlKey);
+      if (multi) {
+        // Toggle this file in/out of selection
+        const name = el.dataset.name;
+        if (adbSelectedFiles.has(name)) {
+          adbSelectedFiles.delete(name);
+          el.classList.remove("selected");
+        } else {
+          adbSelectedFiles.add(name);
+          el.classList.add("selected");
+        }
+      } else {
+        // Single select — clear others
+        document.querySelectorAll("#adb-file-list .file-row").forEach(r => r.classList.remove("selected"));
+        adbSelectedFiles.clear();
+        adbSelectedFiles.add(el.dataset.name);
+        el.classList.add("selected");
+      }
+      document.getElementById("adb-pull-btn").disabled = adbSelectedFiles.size === 0;
+      adbUpdateDeleteBtn();
+    }
+
+    function adbDblClick(el) { if (el.dataset.isdir === "true") adbNavigate(el.dataset.name); }
+
+    async function adbNavigate(name) {
+      if (name === "..") {
+        if (adbNavHistory.length > 0) {
+          adbCwd = adbNavHistory.pop();
+        } else if (adbCwd === "/") {
+          return;
+        } else {
+          adbCwd = adbCwd.replace(/\/[^/]+$/, "") || "/";
+        }
+        adbSymlinkOrigin = null;
+        adbUpdateSymlinkBtn();
+        adbRefreshFiles();
+        return;
+      }
+
+      // Going into a subdirectory — push current location
+      const prevCwd = adbCwd;
+      const tentative = adbCwd === "/" ? "/" + name : adbCwd + "/" + name;
+
+      // Resolve symlinks via the device, with fallback
+      let resolved = tentative;
+      try {
+        const result = await window.api.adbShell(`cd '${tentative.replace(/'/g, "'\\''")}' 2>/dev/null && pwd`);
+        if (result.ok && result.output && result.output.trim().startsWith("/")) {
+          resolved = result.output.trim();
+        }
+      } catch {}
+
+      // Verify the directory is actually listable before navigating
+      const check = await window.api.adbLs(resolved);
+      if (!check.ok) {
+        const check2 = await window.api.adbLs(tentative);
+        if (check2.ok) { resolved = tentative; }
+      }
+
+      // Detect if this was a symlink (resolved path differs from tentative)
+      const wasSymlink = resolved !== tentative;
+
+      adbNavHistory.push(prevCwd);
+      adbCwd = resolved;
+      adbSymlinkOrigin = wasSymlink ? prevCwd : null;
+      adbUpdateSymlinkBtn();
+      adbRefreshFiles();
+    }
+
+    function adbSymlinkBack() {
+      if (!adbSymlinkOrigin && adbNavHistory.length === 0) return;
+      if (adbNavHistory.length > 0) {
+        adbCwd = adbNavHistory.pop();
+      }
+      adbSymlinkOrigin = null;
+      adbUpdateSymlinkBtn();
+      adbRefreshFiles();
+    }
+
+    function adbUpdateSymlinkBtn() {
+      document.getElementById("adb-symlink-back-btn").style.display = adbSymlinkOrigin ? "" : "none";
+    }
+
+    function adbFileStatus(msg, isError, isHtml) {
+      const el = document.getElementById("adb-file-status");
+      el.style.display = "";
+      if (isHtml) { el.innerHTML = msg; } else { el.textContent = msg; }
+      el.style.color = isError ? "var(--red)" : "var(--green)";
+    }
+
+    let adbTransferCleanup = null;
+    function adbListenTransfer() {
+      if (adbTransferCleanup) return;
+      adbTransferCleanup = window.api.onAdbTransferProgress((pct) => {
+        if (pct >= 0) {
+          const el = document.getElementById("adb-file-status");
+          el.style.display = "";
+          el.style.color = "var(--accent)";
+          el.innerHTML = `${SVG_WAIT} Transferring… ${pct}%`;
+        }
+      });
+    }
+
+    async function adbPullSelected() {
+      if (adbSelectedFiles.size === 0) return;
+      const dest = await window.api.pickFolder(t("adb.btn.pull"));
+      if (!dest) return;
+      adbListenTransfer();
+      const files = [...adbSelectedFiles];
+      let okCount = 0;
+      let errCount = 0;
+      for (const name of files) {
+        const remote = adbCwd + "/" + name;
+        adbFileStatus(SVG_WAIT + " Pulling " + name + (files.length > 1 ? ` (${okCount + errCount + 1}/${files.length})` : "") + "…", false, true);
+        document.getElementById("adb-file-status").style.color = "var(--accent)";
+        const result = await window.api.adbPull(remote, dest);
+        if (result.ok) { okCount++; } else { errCount++; }
+      }
+      if (errCount === 0) {
+        adbFileStatus(SVG_OK + " Pulled " + (files.length === 1 ? files[0] : files.length + " files"), false, true);
+      } else {
+        adbFileStatus(SVG_ERR + " " + okCount + " pulled, " + errCount + " failed", errCount > 0, true);
+      }
+    }
+
+    async function adbPushFile() {
+      const files = await window.api.pickFiles(t("adb.btn.push"));
+      if (!files) return;
+      adbListenTransfer();
+      for (const f of files) {
+        const fileName = f.split(/[/\\]/).pop();
+        const remoteDest = adbCwd + "/" + fileName;
+        adbFileStatus(SVG_WAIT + " Pushing " + fileName + "…", false, true);
+        document.getElementById("adb-file-status").style.color = "var(--accent)";
+        const result = await window.api.adbPush(f, remoteDest);
+        if (result.ok) {
+          adbFileStatus(SVG_OK + " Pushed " + fileName, false, true);
+        } else {
+          adbFileStatus(SVG_ERR + " " + result.error, true, true);
+        }
+      }
+      adbRefreshFiles();
+    }
+
+    async function adbDeleteSelected() {
+      if (adbSelectedFiles.size === 0 || !adbCwd.startsWith(ADB_SD_PATH)) return;
+      const files = [...adbSelectedFiles];
+      let okCount = 0;
+      let errCount = 0;
+      for (const name of files) {
+        const remote = adbCwd + "/" + name;
+        const result = await window.api.adbDelete(remote);
+        if (result.ok) { okCount++; } else { errCount++; }
+      }
+      if (errCount === 0) {
+        adbFileStatus(SVG_OK + " Deleted " + (files.length === 1 ? files[0] : files.length + " files"), false, true);
+      } else {
+        adbFileStatus(SVG_ERR + " " + okCount + " deleted, " + errCount + " failed", true, true);
+      }
+      adbRefreshFiles();
+    }
+
+    async function adbScreenshot() {
+      const statusEl = document.getElementById("adb-screenshot-status");
+      statusEl.textContent = t("adb.status.checking");
+      const result = await window.api.adbScreenshot();
+      if (result.ok) {
+        statusEl.textContent = t("adb.log.screenshot").replace("{path}", result.path);
+        adbRefreshScreenshots();
+      } else {
+        statusEl.innerHTML = SVG_ERR + " " + result.error;
+      }
+    }
+
+    function pathToFileUrl(p) {
+      // Convert OS path to proper file:// URL (handles Windows backslashes and drive letters)
+      const normalized = p.replace(/\\/g, "/");
+      if (/^[A-Za-z]:/.test(normalized)) return "file:///" + normalized;
+      return "file://" + normalized;
+    }
+
+    async function adbRefreshScreenshots() {
+      const grid = document.getElementById("adb-screenshots-grid");
+      const screenshots = await window.api.adbListScreenshots(5);
+      if (screenshots.length === 0) {
+        grid.innerHTML = '<div class="empty-msg" style="width:100%">No screenshots yet</div>';
+        return;
+      }
+      grid.innerHTML = screenshots.map(s => {
+        const escaped = s.path.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+        return `<img class="screenshot-thumb" src="${pathToFileUrl(s.path)}?t=${s.mtime}" title="${s.name}" onclick="openScreenshotModal('${escaped}')" />`;
+      }).join("");
+    }
+
+    let currentScreenshotPath = null;
+    function openScreenshotModal(filePath) {
+      currentScreenshotPath = filePath;
+      const modal = document.getElementById("screenshot-modal");
+      const img = document.getElementById("screenshot-modal-img");
+      const title = document.getElementById("screenshot-modal-title");
+      img.src = pathToFileUrl(filePath) + "?t=" + Date.now();
+      title.textContent = filePath.split(/[/\\]/).pop();
+      modal.style.display = "";
+    }
+    function closeScreenshotModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById("screenshot-modal").style.display = "none";
+    }
+    async function adbOpenScreenshotsFolder() {
+      const dir = await window.api.adbScreenshotDir();
+      window.api.openFileNative(dir);
+    }
+
+    async function adbReboot() {
+      const result = await window.api.adbReboot();
+      if (result.ok) {
+        adbSetConnected(false);
+        document.getElementById("adb-status").innerHTML = `<span class="status-ico">${SVG_WAIT} ${t("adb.log.rebooting")}</span>`;
+        setTimeout(adbResetAll, 3000);
+      }
+    }
+
+    function adbResetAll() {
+      // Status bar → back to idle
+      document.getElementById("adb-status").textContent = t("adb.status.idle");
+
+      // Storage pills
+      document.getElementById("adb-storage-sd-size").textContent = "—";
+      document.getElementById("adb-storage-internal-size").textContent = "—";
+      document.getElementById("adb-storage-ram-size").textContent = "—";
+      document.getElementById("adb-storage-ram").style.display = "none";
+
+      // Device info pills
+      document.getElementById("adb-fw-version").textContent = "—";
+      document.getElementById("adb-fw-pill").style.display = "none";
+      document.getElementById("adb-kernel-version").textContent = "—";
+      document.getElementById("adb-kernel-pill").style.display = "none";
+      document.getElementById("adb-battery-info").textContent = "—";
+      document.getElementById("adb-battery-pill").style.display = "none";
+
+      // File browser
+      adbCwd = "/";
+      adbNavHistory = [];
+      adbSymlinkOrigin = null;
+      adbSelectedFiles.clear();
+      document.getElementById("adb-cwd").textContent = "/";
+      document.getElementById("adb-symlink-back-btn").style.display = "none";
+      document.getElementById("adb-file-list").innerHTML = '<div class="empty-msg">…</div>';
+      document.getElementById("adb-pull-btn").disabled = true;
+      document.getElementById("adb-delete-btn").style.display = "none";
+      document.getElementById("adb-file-status").style.display = "none";
+
+      // Screenshots
+      document.getElementById("adb-screenshots-grid").innerHTML = "";
+      document.getElementById("adb-screenshot-status").textContent = "";
+
+      // Terminal
+      document.getElementById("adb-terminal-output").innerHTML = "";
+      adbTermCwd = "/";
+      adbUpdatePrompt();
+      adbTerminalHistory = [];
+      adbHistoryIdx = -1;
+    }
+
+    // Dmesg
+    let dmesgContent = "";
+
+    async function adbShowDmesg() {
+      const modal = document.getElementById("dmesg-modal");
+      const output = document.getElementById("dmesg-output");
+      modal.style.display = "";
+      output.textContent = "Loading…";
+      await adbRefreshDmesg();
+    }
+
+    async function adbRefreshDmesg() {
+      const output = document.getElementById("dmesg-output");
+      output.textContent = "Loading…";
+      const result = await window.api.adbDmesg();
+      if (result.ok) {
+        dmesgContent = result.output;
+        output.textContent = result.output;
+        output.scrollTop = output.scrollHeight;
+      } else {
+        dmesgContent = "";
+        output.textContent = "Error: " + result.error;
+      }
+    }
+
+    async function adbSaveDmesg() {
+      if (!dmesgContent) return;
+      const result = await window.api.saveTextFile("dmesg.log", dmesgContent);
+      if (result.ok) {
+        adbFileStatus("Saved: " + result.path, false);
+      }
+    }
+
+    function closeDmesgModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById("dmesg-modal").style.display = "none";
+    }
+
+    // Processes
+    let processesInterval = null;
+    let processesRefreshing = false;
+
+    async function adbShowProcesses() {
+      document.getElementById("processes-modal").style.display = "";
+      document.getElementById("processes-tbody").innerHTML = '<tr><td colspan="99" style="text-align:center;color:var(--text-muted);padding:20px">Loading…</td></tr>';
+      document.getElementById("processes-thead").innerHTML = "<tr></tr>";
+      document.getElementById("processes-count").textContent = "";
+      document.getElementById("processes-sysinfo").style.display = "none";
+      await adbRefreshProcesses();
+      // Auto-refresh every 3 seconds
+      if (processesInterval) clearInterval(processesInterval);
+      processesInterval = setInterval(adbRefreshProcesses, 3000);
+    }
+
+    async function adbRefreshProcesses() {
+      if (processesRefreshing) return;
+      processesRefreshing = true;
+
+      const thead = document.getElementById("processes-thead");
+      const tbody = document.getElementById("processes-tbody");
+      const countEl = document.getElementById("processes-count");
+      const sysinfoEl = document.getElementById("processes-sysinfo");
+
+      const result = await window.api.adbProcesses();
+      if (!result.ok) {
+        tbody.innerHTML = `<tr><td colspan="99" style="color:var(--red);padding:12px">${result.error}</td></tr>`;
+        processesRefreshing = false;
+        return;
+      }
+
+      const lines = result.output.split("\n");
+
+      // top output has system info lines before the PID header
+      let headerIdx = -1;
+      const sysLines = [];
+      for (let i = 0; i < lines.length; i++) {
+        if (/^\s*PID\b/.test(lines[i])) { headerIdx = i; break; }
+        if (lines[i].trim()) sysLines.push(lines[i].trim());
+      }
+
+      // Show system info (Mem, CPU, Load)
+      if (sysLines.length > 0) {
+        const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+        sysinfoEl.innerHTML = sysLines.map(l => esc(l)).join("<br>");
+        sysinfoEl.style.display = "";
+      } else {
+        sysinfoEl.style.display = "none";
+      }
+
+      if (headerIdx < 0) {
+        tbody.innerHTML = '<tr><td colspan="99" style="text-align:center;color:var(--text-muted);padding:20px">Could not parse process list</td></tr>';
+        processesRefreshing = false;
+        return;
+      }
+
+      const headerLine = lines[headerIdx];
+      const dataLines = lines.slice(headerIdx + 1).filter(l => l.trim());
+
+      // Parse header columns by position
+      const headerLabels = headerLine.trim().split(/\s+/);
+      const cols = [];
+      let searchFrom = 0;
+      for (const label of headerLabels) {
+        const pos = headerLine.indexOf(label, searchFrom);
+        cols.push({ label, start: pos });
+        searchFrom = pos + label.length;
+      }
+
+      // Friendly names
+      const friendly = {
+        "PID": "PID", "PPID": "PPID", "USER": "USER",
+        "STAT": "STATE", "VSZ": "VSZ", "%VSZ": "%MEM", "%CPU": "%CPU",
+        "COMMAND": "COMMAND", "CMD": "COMMAND",
+      };
+      thead.innerHTML = "<tr>" + cols.map(c =>
+        `<th>${friendly[c.label] || c.label}</th>`
+      ).join("") + "</tr>";
+
+      const pidIdx = cols.findIndex(c => /^PID$/i.test(c.label));
+      const cmdIdx = cols.length - 1;
+      const cpuIdx = cols.findIndex(c => /^%CPU$/i.test(c.label));
+
+      const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+      // Parse rows using column positions
+      const parsed = [];
+      for (const row of dataLines) {
+        if (!row.trim()) continue;
+        const cells = [];
+        for (let i = 0; i < cols.length; i++) {
+          const start = cols[i].start;
+          const end = (i < cols.length - 1) ? cols[i + 1].start : row.length;
+          cells.push(row.substring(start, end).trim());
+        }
+        if (cells.every(c => !c)) continue;
+        parsed.push(cells);
+      }
+
+      // Sort by %CPU desc
+      if (cpuIdx >= 0) {
+        parsed.sort((a, b) => (parseInt(b[cpuIdx]) || 0) - (parseInt(a[cpuIdx]) || 0));
+      }
+
+      let html = "";
+      for (const cells of parsed) {
+        html += "<tr>";
+        for (let i = 0; i < cells.length; i++) {
+          let cls = "";
+          if (i === pidIdx) cls = ' class="pid-col"';
+          else if (i === cmdIdx) cls = ' class="cmd-col"';
+          html += `<td${cls}>${esc(cells[i])}</td>`;
+        }
+        html += "</tr>";
+      }
+
+      tbody.innerHTML = html || '<tr><td colspan="99" style="text-align:center;color:var(--text-muted);padding:20px">No processes</td></tr>';
+      countEl.textContent = parsed.length + " processes";
+      processesRefreshing = false;
+    }
+
+    function closeProcessesModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      if (processesInterval) { clearInterval(processesInterval); processesInterval = null; }
+      document.getElementById("processes-modal").style.display = "none";
+    }
+
+    // Screenshot help modal
+    function openScreenshotHelpModal() {
+      document.getElementById("screenshot-help-modal").style.display = "";
+    }
+    function closeScreenshotHelpModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById("screenshot-help-modal").style.display = "none";
+    }
+
+    // Terminal — ANSI color code parser
+    const ANSI_COLOR_MAP = {
+      "0": null, // reset
+      "1": "ansi-bold", "2": "ansi-dim", "3": "ansi-italic", "4": "ansi-underline",
+      "30": "ansi-black", "31": "ansi-red", "32": "ansi-green", "33": "ansi-yellow",
+      "34": "ansi-blue", "35": "ansi-magenta", "36": "ansi-cyan", "37": "ansi-white",
+      "40": "ansi-bg-black", "41": "ansi-bg-red", "42": "ansi-bg-green", "43": "ansi-bg-yellow",
+      "44": "ansi-bg-blue", "45": "ansi-bg-magenta", "46": "ansi-bg-cyan", "47": "ansi-bg-white",
+      "90": "ansi-bright-black", "91": "ansi-bright-red", "92": "ansi-bright-green", "93": "ansi-bright-yellow",
+      "94": "ansi-bright-blue", "95": "ansi-bright-magenta", "96": "ansi-bright-cyan", "97": "ansi-bright-white",
+    };
+
+    function parseAnsi(text) {
+      // Split on ANSI escape sequences, preserving them
+      const parts = text.split(/(\x1b\[[0-9;]*m)/g);
+      const container = document.createDocumentFragment();
+      let currentClasses = [];
+
+      for (const part of parts) {
+        if (!part) continue;
+        const ansiMatch = part.match(/^\x1b\[([0-9;]*)m$/);
+        if (ansiMatch) {
+          const codes = ansiMatch[1].split(";").filter(Boolean);
+          if (codes.length === 0 || (codes.length === 1 && codes[0] === "0")) {
+            currentClasses = [];
+          } else {
+            for (const code of codes) {
+              if (code === "0") { currentClasses = []; }
+              else if (ANSI_COLOR_MAP[code]) { currentClasses.push(ANSI_COLOR_MAP[code]); }
+            }
+          }
+        } else {
+          if (currentClasses.length > 0) {
+            const span = document.createElement("span");
+            span.className = currentClasses.join(" ");
+            span.textContent = part;
+            container.appendChild(span);
+          } else {
+            container.appendChild(document.createTextNode(part));
+          }
+        }
+      }
+      return container;
+    }
+
+    function adbTermLog(text, cls) {
+      const out = document.getElementById("adb-terminal-output");
+      if (cls) {
+        // Styled log (cmd, err) — no ANSI parsing needed
+        const span = document.createElement("span");
+        span.className = cls;
+        span.textContent = text + "\n";
+        out.appendChild(span);
+      } else {
+        // Output may contain ANSI color codes
+        const hasAnsi = /\x1b\[/.test(text);
+        if (hasAnsi) {
+          const parsed = parseAnsi(text);
+          out.appendChild(parsed);
+          out.appendChild(document.createTextNode("\n"));
+        } else {
+          const span = document.createElement("span");
+          span.className = "out";
+          span.textContent = text + "\n";
+          out.appendChild(span);
+        }
+      }
+      out.scrollTop = out.scrollHeight;
+    }
+
+    let adbTermCwd = "/";
+
+    function adbUpdatePrompt() {
+      document.getElementById("adb-terminal-prompt").textContent = adbTermCwd + " $";
+    }
+
+    // Resolve a path string: handle ., .., absolute, relative
+    function resolvePath(base, target) {
+      if (!target || target === "~") return "/";
+      let parts;
+      if (target.startsWith("/")) {
+        parts = target.split("/");
+      } else {
+        parts = (base + "/" + target).split("/");
+      }
+      const resolved = [];
+      for (const p of parts) {
+        if (p === "" || p === ".") continue;
+        if (p === "..") { resolved.pop(); }
+        else { resolved.push(p); }
+      }
+      return "/" + resolved.join("/") || "/";
+    }
+
+    async function adbTerminalRun() {
+      const input = document.getElementById("adb-terminal-input");
+      const cmd = input.value.trim();
+      if (!cmd) return;
+      input.value = "";
+      adbTerminalHistory.push(cmd);
+      adbHistoryIdx = adbTerminalHistory.length;
+      adbTermLog("$ " + cmd, "cmd");
+
+      // Handle cd
+      if (cmd === "cd" || /^cd\s+/.test(cmd)) {
+        const target = cmd === "cd" ? "" : cmd.substring(3).trim().replace(/^['"]|['"]$/g, "");
+        const absPath = resolvePath(adbTermCwd, target);
+        const escaped = absPath.replace(/'/g, "'\\''");
+
+        // Single cd to absolute path + pwd to get the real resolved path
+        const result = await window.api.adbShell("cd '" + escaped + "' && pwd");
+        if (result.ok && result.output) {
+          const pwdLine = result.output.trim().split("\n").pop().trim();
+          if (pwdLine.startsWith("/")) {
+            adbTermCwd = pwdLine;
+            adbUpdatePrompt();
+            return;
+          }
+        }
+        // If that failed, try without pwd (maybe pwd doesn't exist)
+        const check = await window.api.adbShell("cd '" + escaped + "' && echo __OK__");
+        if (check.ok && check.output && check.output.includes("__OK__")) {
+          adbTermCwd = absPath;
+          adbUpdatePrompt();
+        } else {
+          adbTermLog("cd: " + (target || "/") + ": No such file or directory", "err");
+        }
+        return;
+      }
+
+      // For all other commands, prepend cd to the virtual cwd
+      const escaped = adbTermCwd.replace(/'/g, "'\\''");
+      const fullCmd = "cd '" + escaped + "' && " + cmd;
+
+      const result = await window.api.adbShell(fullCmd);
+      if (result.ok) { if (result.output) adbTermLog(result.output); }
+      else { adbTermLog(result.error, "err"); }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const input = document.getElementById("adb-terminal-input");
+      if (input) input.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          if (adbHistoryIdx > 0) { adbHistoryIdx--; input.value = adbTerminalHistory[adbHistoryIdx]; }
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          if (adbHistoryIdx < adbTerminalHistory.length - 1) { adbHistoryIdx++; input.value = adbTerminalHistory[adbHistoryIdx]; }
+          else { adbHistoryIdx = adbTerminalHistory.length; input.value = ""; }
+        }
+      });
+    });
+
 
     // ═══════════════════════════════════════════════
     // INIT
