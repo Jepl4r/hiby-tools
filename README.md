@@ -4,9 +4,17 @@ Desktop app for modding HibyOS firmware and updating the music database on HiBy 
 
 Built with Electron. Runs on macOS, Linux, and Windows.
 
-<img src="https://github.com/Jepl4r/hiby-tools/blob/23ee392fef51df29261fced68c8bcc1c0e3465f8/Screenshots/Firmware%20Modder.png" alt="" width="536" height="396">
+<table>
+  <tr>
+    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Firmware%20Modder.png?raw=true" width="536"><br><b>Firmware Modder</b></td>
+    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Database%20Updater.png?raw=true" width="536"><br><b>Database Updater</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/Playlist%20Manager.png?raw=true" width="536"><br><b>Playlist Manager</b></td>
+    <td align="center"><img src="https://github.com/Jepl4r/hiby-tools/blob/main/screenshots/ADB%20Manager.png?raw=true" width="536"><br><b>ADB Manager</b></td>
+  </tr>
+</table>
 
-<img src="https://github.com/Jepl4r/hiby-tools/blob/23ee392fef51df29261fced68c8bcc1c0e3465f8/Screenshots/Database%20Updater.png" alt="" width="536" height="396">
 
 ## Features
 
