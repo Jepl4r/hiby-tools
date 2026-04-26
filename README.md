@@ -60,7 +60,7 @@ This detects your platform (e.g. `darwin-arm64`) and copies `7z`, `unsquashfs`, 
 **Manual:**
 
 ```bash
-mkdir -p scripts/bin/darwin-arm64   # linux-x64, win32-x64
+mkdir -p scripts/bin/darwin-arm64   # or linux-x64, win32-x64
 cp $(which 7z) scripts/bin/darwin-arm64/
 cp $(which unsquashfs) scripts/bin/darwin-arm64/
 cp $(which mksquashfs) scripts/bin/darwin-arm64/
@@ -147,7 +147,7 @@ msys-zstd-1.dll
 2. Extract and find `adb.exe`, `AdbWinApi.dll` and `AdbWinUsbApi.dll`
 3. Copy them into `scripts/bin/win32-x64/`.
 
-#### 5. `ffmpeg``
+#### 5. `ffmpeg`
 
 **Source:** [ffmpeg](https://www.gyan.dev/ffmpeg/builds/) 
 
