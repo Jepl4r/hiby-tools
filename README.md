@@ -45,8 +45,6 @@ npm start
 npm install
 ```
 
----
-
 ### 2. Bundle native binaries (recommended)
 
 The app can use system-installed tools or bundled binaries. To make the app self-contained, copy the required binaries into `scripts/bin/`.
@@ -57,16 +55,18 @@ The app can use system-installed tools or bundled binaries. To make the app self
 ./bundle-bins.sh
 ```
 
-This detects your platform (e.g. `darwin-arm64`) and copies `7z`, `unsquashfs`, `mksquashfs`, and `mkisofs` from your system.
+This detects your platform (e.g. `darwin-arm64`) and copies `7z`, `unsquashfs`, `mksquashfs`, `mkisofs`, `adb` and `ffmpeg` from your system.
 
 **Manual:**
 
 ```bash
-mkdir -p scripts/bin/darwin-arm64   # or linux-x64, win32-x64
+mkdir -p scripts/bin/darwin-arm64   # linux-x64, win32-x64
 cp $(which 7z) scripts/bin/darwin-arm64/
 cp $(which unsquashfs) scripts/bin/darwin-arm64/
 cp $(which mksquashfs) scripts/bin/darwin-arm64/
 cp $(which mkisofs) scripts/bin/darwin-arm64/
+cp $(which adb) scripts/bin/darwin-arm64/
+cp $(which ffmpeg) scripts/bin/darwin-arm64/
 ```
 
 The app checks for binaries in this order:
@@ -74,7 +74,6 @@ The app checks for binaries in this order:
 2. `scripts/bin/` (generic fallback)
 3. System `PATH`
 
----
 
 **Windows**
 
@@ -106,7 +105,7 @@ This gives you both `unsquashfs.exe` and `mksquashfs.exe` at `<install location 
 **Alternative:** [squashfs-tools-ng](https://infraroot.at/pub/squashfs/windows/)
 Download the latest `*-mingw64.zip` from releases. Note that squashfs-tools-ng has a **different CLI** (`rdsquashfs` / `gensquashfs`) than the classic `unsquashfs` / `mksquashfs`, so MSYS2 squashfs-tools is strongly preferred.
 
-### ⚠️ Important: The `unsquashfs.exe` and `mksquashfs.exe` packages are MSYS2 binaries that depend on `msys-2.0.dll` and other MSYS2 runtime DLLs.
+>#### ⚠️ Important: The `unsquashfs.exe` and `mksquashfs.exe` packages are MSYS2 binaries that depend on `msys-2.0.dll` and other MSYS2 runtime DLLs.
 
 To make them work standalone (outside MSYS2), copy these DLLs alongside the `.exe` files:
 
@@ -140,7 +139,23 @@ msys-zstd-1.dll
 2. Extract and find `mkisofs.exe` inside.
 3. Copy it into `scripts/bin/win32-x64/`.
 
----
+#### 4. `adb` 
+
+**Source:** [ADB](https://developer.android.com/tools/releases/platform-tools?hl=it) 
+
+1. Download the `SDK Platform Tools`
+2. Extract and find `adb.exe`, `AdbWinApi.dll` and `AdbWinUsbApi.dll`
+3. Copy them into `scripts/bin/win32-x64/`.
+
+#### 5. `ffmpeg``
+
+**Source:** [ffmpeg](https://www.gyan.dev/ffmpeg/builds/) 
+
+>Essential version is recommended
+
+1. Download `ffmpeg-release-essentials.7z`
+2. Extract and find `ffmpeg.exe`
+3. Copy it into `scripts/bin/win32-x64/`.
 
 ### 3. Add app icons
 
@@ -152,8 +167,6 @@ assets/
 ├── icon.ico    ← Windows
 └── icon.png    ← Linux
 ```
-
----
 
 ### 4. Build
 
@@ -197,6 +210,8 @@ If you don't bundle the binaries, the following tools must be installed on the s
 | python3 | `brew install python3` | `apt install python3` | Database updater |
 | mutagen | `pip3 install mutagen` | `pip3 install mutagen` | Read audio tags |
 | Pillow | `pip3 install Pillow` | `pip3 install Pillow` | Resize cover art |
+|adb | `brew install android-platform-tools` | `apt install android-tools` | ADB Manager |
+| ffmpeg | `brew install ffmpeg` | `apt install ffmpeg` | Screenshot function
 
 You can check the status of all dependencies inside the app under **Settings → Check dependencies**.
 
