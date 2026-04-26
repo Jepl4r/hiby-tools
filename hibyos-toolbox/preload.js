@@ -60,4 +60,22 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.on("adb-transfer-progress", handler);
     return () => ipcRenderer.removeListener("adb-transfer-progress", handler);
   },
+
+  // Playlist Manager
+  showConfirm: (msg) => ipcRenderer.invoke("show-confirm", msg),
+  playlistList: (dbPath) => ipcRenderer.invoke("playlist-list", dbPath),
+  playlistTracks: (dbPath, id) => ipcRenderer.invoke("playlist-tracks", dbPath, id),
+  playlistFavorites: (dbPath) => ipcRenderer.invoke("playlist-favorites", dbPath),
+  playlistHistory: (dbPath) => ipcRenderer.invoke("playlist-history", dbPath),
+  playlistRecent: (dbPath) => ipcRenderer.invoke("playlist-recent", dbPath),
+  playlistLibrary: (dbPath, search) => ipcRenderer.invoke("playlist-library", dbPath, search),
+  playlistStats: (dbPath) => ipcRenderer.invoke("playlist-stats", dbPath),
+  playlistCreate: (dbPath, name) => ipcRenderer.invoke("playlist-create", dbPath, name),
+  playlistDelete: (dbPath, id) => ipcRenderer.invoke("playlist-delete", dbPath, id),
+  playlistRemoveTracks: (dbPath, id, trackIds) => ipcRenderer.invoke("playlist-remove-tracks", dbPath, id, trackIds),
+  playlistRemoveFavorites: (dbPath, trackIds) => ipcRenderer.invoke("playlist-remove-favorites", dbPath, trackIds),
+  playlistAddTracks: (dbPath, id, src, trackIds) => ipcRenderer.invoke("playlist-add-tracks", dbPath, id, src, trackIds),
+  playlistAddFavorites: (dbPath, trackIds) => ipcRenderer.invoke("playlist-add-favorites", dbPath, trackIds),
+  playlistRename: (dbPath, id, name) => ipcRenderer.invoke("playlist-rename", dbPath, id, name),
+  playlistExport: (dbPath, id) => ipcRenderer.invoke("playlist-export", dbPath, id),
 });

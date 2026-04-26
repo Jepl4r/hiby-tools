@@ -552,6 +552,22 @@
       background: var(--red-dim); border: 1px solid rgba(226,92,92,0.25);
       font-weight: 600; color: var(--red);
     }
+    /* Playlist track rows */
+    .pl-row { display: flex; align-items: center; padding: 7px 12px; gap: 10px; cursor: pointer; border-bottom: 1px solid var(--border-subtle); font-size: 0.85em; transition: background 0.1s; }
+    .pl-row:hover { background: var(--bg-hover); }
+    .pl-row.selected { background: var(--accent-dim); }
+    .pl-row .pl-num { width: 28px; text-align: right; color: var(--text-secondary); font-size: 0.82em; flex-shrink: 0; font-family: var(--mono); }
+    .pl-row .pl-name { flex: 2; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pl-row .pl-artist { flex: 1.5; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pl-row .pl-album { flex: 1.5; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pl-row .pl-quality { width: 80px; text-align: center; color: var(--accent); font-family: var(--mono); font-size: 0.82em; flex-shrink: 0; }
+    .pl-header { display: flex; padding: 5px 12px; gap: 10px; font-size: 0.75em; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-secondary); z-index: 1; }
+    .pl-header span { white-space: nowrap; overflow: hidden; }
+    .pl-header .pl-num { width: 28px; text-align: right; flex-shrink: 0; }
+    .pl-header .pl-name { flex: 2; }
+    .pl-header .pl-artist { flex: 1.5; }
+    .pl-header .pl-album { flex: 1.5; }
+    .pl-header .pl-quality { width: 80px; text-align: center; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -585,6 +601,18 @@
             </svg>
           </div>
           <span data-i18n="nav.database">Database Updater</span>
+        </button>
+        <button class="nav-btn" data-page="playlists" onclick="switchPage('playlists')">
+          <div class="icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <line x1="3" y1="4" x2="12" y2="4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="3" y1="8" x2="10" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <line x1="3" y1="12" x2="11" y2="12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <circle cx="13.5" cy="12" r="3" stroke="currentColor" stroke-width="1.2"/>
+              <path d="M12.5 12l1.3-.8v1.6z" fill="currentColor"/>
+            </svg>
+          </div>
+          <span data-i18n="nav.playlists">Playlist Manager</span>
         </button>
         <button class="nav-btn" data-page="adb" onclick="switchPage('adb')">
           <div class="icon">
@@ -643,7 +671,7 @@
 
       <!-- ═══ Footer / Version ═══ -->
       <div class="sidebar-footer">
-        <div class="version-info">v1.2.0</div>
+        <div class="version-info">v1.3.0</div>
         <button class="info-btn" onclick="switchPage('credits')" title="Credits">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <circle cx="5" cy="5" r="4.2" stroke="currentColor" stroke-width="1.1"/>
@@ -907,6 +935,100 @@
           </div>
         </div>
 
+        <!-- ═══ PAGE: PLAYLIST MANAGER ═══ -->
+        <div id="page-playlists" class="page">
+
+          <!-- Step 1: Load database -->
+          <div class="card">
+            <div class="card-title" data-i18n="pl.step1.title">Database File</div>
+            <div class="card-desc" data-i18n="pl.step1.desc">Select the usrlocal_media.db file from the device (pull it via ADB from /usr/data/, or select a local copy).</div>
+            <div style="display:flex; gap:10px; align-items:center; margin-top:10px">
+              <button class="btn" id="pl-browse-btn" onclick="plBrowseDb()">
+                <span data-i18n="pl.browse">Browse…</span>
+              </button>
+              <button class="btn btn-sm" id="pl-pull-btn" onclick="plPullFromDevice()" style="display:none">
+                <span data-i18n="pl.pullFromDevice">Pull from device</span>
+              </button>
+              <code id="pl-db-path" style="flex:1; padding:6px 10px; border-radius:6px; background:var(--bg-input); font-size:0.85em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" data-i18n="pl.noFile">No file selected</code>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="card" id="pl-stats-card" style="display:none">
+            <div class="card-title" data-i18n="pl.stats.title">Library Stats</div>
+            <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:center;">
+              <div class="adb-storage-pill">
+                <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 6.5v5l4-2.5z" fill="currentColor" opacity="0.4"/></svg></span>
+                <div><strong data-i18n="pl.stats.tracks">Tracks</strong><br><span id="pl-stat-tracks">—</span></div>
+              </div>
+              <div class="adb-storage-pill">
+                <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="2.5" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.2"/><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1"/><circle cx="9" cy="9" r="1" fill="currentColor" opacity="0.4"/></svg></span>
+                <div><strong data-i18n="pl.stats.albums">Albums</strong><br><span id="pl-stat-albums">—</span></div>
+              </div>
+              <div class="adb-storage-pill">
+                <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="5.5" r="3" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 15c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
+                <div><strong data-i18n="pl.stats.artists">Artists</strong><br><span id="pl-stat-artists">—</span></div>
+              </div>
+              <div class="adb-storage-pill">
+                <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 3.5h7l3 3V14a1.5 1.5 0 01-1.5 1.5h-8A1.5 1.5 0 013 14V5a1.5 1.5 0 011-1.5z" stroke="currentColor" stroke-width="1.2"/><path d="M10.5 3.5v3.5h3" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg></span>
+                <div><strong data-i18n="pl.stats.playlists">Playlists</strong><br><span id="pl-stat-playlists">—</span></div>
+              </div>
+              <div class="adb-storage-pill">
+                <span class="adb-storage-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3l1.5 3.2 3.5.5-2.5 2.5.6 3.5L9 11l-3.1 1.7.6-3.5L4 6.7l3.5-.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span>
+                <div><strong data-i18n="pl.stats.favorites">Favorites</strong><br><span id="pl-stat-favorites">—</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Playlist selector + track list -->
+          <div class="card" id="pl-main-card" style="display:none">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:14px">
+              <select id="pl-select" class="setting-select" onchange="plSwitchPlaylist()" style="min-width:200px; flex:1"></select>
+              <button class="btn btn-sm" onclick="plCreatePlaylist()" title="New playlist">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              </button>
+              <button class="btn btn-sm" id="pl-rename-btn" onclick="plRenamePlaylist()" title="Rename" style="display:none">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 1.5l2.5 2.5M1.5 10.5l.5-2.5L8.5 1.5 11 4 4.5 10.5z" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="btn btn-sm" id="pl-delete-btn" onclick="plDeletePlaylist()" title="Delete" style="display:none">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M4.5 3V2h3v1M3 3v7a1 1 0 001 1h4a1 1 0 001-1V3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+              </button>
+              <button class="btn btn-sm" id="pl-export-btn" onclick="plExportPlaylist()" title="Export M3U" style="display:none">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5l3 3 3-3M2 10h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="btn btn-sm" id="pl-add-btn" onclick="plOpenAddModal()" title="Add tracks" style="display:none">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <span style="margin-left:2px">Add</span>
+              </button>
+              <button class="btn btn-sm" id="pl-remove-sel-btn" onclick="plRemoveSelected()" title="Remove selected" style="display:none" disabled>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><line x1="2" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <span style="margin-left:2px">Remove</span>
+              </button>
+
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+              <input id="pl-filter" type="text" placeholder="Filter tracks…"
+                style="flex:1; padding:6px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg-input); color:var(--text-primary); font-size:13px; font-family:var(--font); outline:none;"
+                oninput="plFilterTracks()" />
+              <span id="pl-track-count" style="font-size:0.82em; color:var(--text-secondary); white-space:nowrap"></span>
+            </div>
+            <div id="pl-track-list" style="max-height:420px; overflow-y:auto; border-radius:8px; border:1px solid var(--border-subtle)">
+              <div class="empty-msg">…</div>
+            </div>
+            <div id="pl-status" style="margin-top:8px; font-size:0.85em; display:none"></div>
+          </div>
+
+          <!-- Push back to device -->
+          <div class="card" id="pl-push-card" style="display:none">
+            <div class="card-title" data-i18n="pl.push.title">Push to Device</div>
+            <div class="card-desc" data-i18n="pl.push.desc">Push the modified database back to the device via ADB.</div>
+            <button class="btn" id="pl-push-btn" onclick="plPushToDevice()">
+              <span data-i18n="pl.push.btn">Push database</span>
+            </button>
+            <span id="pl-push-status" style="margin-left:12px; font-size:0.85em"></span>
+          </div>
+        </div>
+
         <!-- ═══ PAGE: CREDITS ═══ -->
         <div id="page-credits" class="page">
           <div class="credits-section">
@@ -1052,9 +1174,49 @@
     </div>
   </div>
 
+  <!-- ═══ Add Tracks Modal ═══ -->
+  <div id="pl-add-modal" class="modal-overlay" style="display:none;" onclick="plCloseAddModal(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="width:700px; max-width:95vw;">
+      <div class="modal-header">
+        <div class="modal-title">Add Tracks</div>
+        <button class="modal-close" onclick="plCloseAddModal()">&times;</button>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px; align-items:center;">
+        <input id="pl-add-search" type="text" placeholder="Search by title, artist, album…"
+          style="flex:1; padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg-input); color:var(--text-primary); font-size:13px; font-family:var(--font); outline:none;"
+          oninput="plSearchLibrary()" />
+        <span id="pl-add-count" style="font-size:0.82em; color:var(--text-secondary); white-space:nowrap;"></span>
+      </div>
+      <div id="pl-add-list" style="max-height:380px; overflow-y:auto; border-radius:8px; border:1px solid var(--border-subtle);">
+        <div class="empty-msg">Search or browse your library</div>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:space-between; align-items:center; margin-top:14px;">
+        <span id="pl-add-selected-count" style="font-size:0.85em; color:var(--text-secondary);">0 selected</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-sm" onclick="plCloseAddModal()">Cancel</button>
+          <button class="btn" id="pl-add-confirm-btn" onclick="plConfirmAdd()" disabled>Add selected</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Inline Prompt Modal ═══ -->
+  <div id="inline-prompt-modal" class="modal-overlay" style="display:none;">
+    <div class="modal" onclick="event.stopPropagation()" style="width:400px; max-width:90vw;">
+      <div class="modal-header">
+        <div class="modal-title" id="inline-prompt-title">Input</div>
+        <button class="modal-close" onclick="inlinePromptResolve(null)">&times;</button>
+      </div>
+      <input id="inline-prompt-input" type="text" style="width:100%; box-sizing:border-box; padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg-input); color:var(--text-primary); font-size:14px; font-family:var(--font); margin-bottom:14px; outline:none;" />
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button class="btn btn-sm" onclick="inlinePromptResolve(null)">Cancel</button>
+        <button class="btn" onclick="inlinePromptResolve(document.getElementById('inline-prompt-input').value)">OK</button>
+      </div>
+    </div>
+  </div>
+
   <script>
 
-    // SVG icon helpers (emoji replacements)
     const SVG_OK = `<svg class="ico ico-ok" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="var(--green)" opacity="0.15" stroke="var(--green)" stroke-width="1.2"/><path d="M5 8.2l2 2 4-4.4" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     const SVG_WARN = `<svg class="ico ico-warn" width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2L1.5 13.5h13L8 2z" fill="var(--accent)" opacity="0.15" stroke="var(--accent)" stroke-width="1.2" stroke-linejoin="round"/><line x1="8" y1="6.5" x2="8" y2="10" stroke="var(--accent)" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.8" r="0.7" fill="var(--accent)"/></svg>`;
     const SVG_ERR = `<svg class="ico ico-err" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" fill="var(--red)" opacity="0.15" stroke="var(--red)" stroke-width="1.2"/><line x1="5.5" y1="5.5" x2="10.5" y2="10.5" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/><line x1="10.5" y1="5.5" x2="5.5" y2="10.5" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round"/></svg>`;
@@ -1170,6 +1332,7 @@
         "credits.sub": "Firmware modding tools for HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Credits",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "nav.playlists": "Playlist Manager", "title.playlists": "Playlist Manager", "pl.step1.title": "Database File", "pl.step1.desc": "Select the usrlocal_media.db file from the device (pull it via ADB from /usr/data/, or select a local copy).", "pl.browse": "Browse…", "pl.pullFromDevice": "Pull from device", "pl.noFile": "No file selected", "pl.stats.title": "Library Stats", "pl.stats.tracks": "Tracks", "pl.stats.albums": "Albums", "pl.stats.artists": "Artists", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favorites", "pl.push.title": "Push to Device", "pl.push.desc": "Push the modified database back to the device via ADB.", "pl.push.btn": "Push database",
         "adb.status.idle": "Press Start to detect the device.",
         "adb.status.checking": "Detecting…",
         "adb.status.noAdb": "ADB not found. Install Android platform-tools.",
@@ -1236,6 +1399,7 @@
         "credits.sub": "Firmware modding tools per HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Crediti",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "nav.playlists": "Gestione Playlist", "title.playlists": "Gestione Playlist", "pl.step1.title": "File Database", "pl.step1.desc": "Seleziona il file usrlocal_media.db dal dispositivo (pull via ADB da /usr/data/, o seleziona una copia locale).", "pl.browse": "Sfoglia…", "pl.pullFromDevice": "Pull dal dispositivo", "pl.noFile": "Nessun file selezionato", "pl.stats.title": "Statistiche Libreria", "pl.stats.tracks": "Brani", "pl.stats.albums": "Album", "pl.stats.artists": "Artisti", "pl.stats.playlists": "Playlist", "pl.stats.favorites": "Preferiti", "pl.push.title": "Invia al Dispositivo", "pl.push.desc": "Invia il database modificato al dispositivo via ADB.", "pl.push.btn": "Invia database",
         "adb.status.idle": "Premi Avvia per rilevare il dispositivo.",
         "adb.status.checking": "Rilevamento…",
         "adb.status.noAdb": "ADB non trovato. Installa Android platform-tools.",
@@ -1303,6 +1467,7 @@
         "credits.sub": "Firmware-Modding-Tools für HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Datenbank Updater", "title.credits": "Credits",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "nav.playlists": "Playlist Manager", "title.playlists": "Playlist Manager", "pl.step1.title": "Datenbankdatei", "pl.step1.desc": "Wähle die usrlocal_media.db vom Gerät (per ADB Pull von /usr/data/, oder wähle eine lokale Kopie).", "pl.browse": "Durchsuchen…", "pl.pullFromDevice": "Vom Gerät ziehen", "pl.noFile": "Keine Datei ausgewählt", "pl.stats.title": "Bibliothek-Statistiken", "pl.stats.tracks": "Titel", "pl.stats.albums": "Alben", "pl.stats.artists": "Künstler", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoriten", "pl.push.title": "Zum Gerät senden", "pl.push.desc": "Die geänderte Datenbank per ADB zurück auf das Gerät senden.", "pl.push.btn": "Datenbank senden",
         "adb.status.idle": "Starten drücken um das Gerät zu erkennen.",
         "adb.status.checking": "Erkennung…",
         "adb.status.noAdb": "ADB nicht gefunden. Android platform-tools installieren.",
@@ -1369,6 +1534,7 @@
         "credits.sub": "Outils de modding firmware pour HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Mise à jour BDD", "title.credits": "Crédits",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "nav.playlists": "Gestionnaire Playlists", "title.playlists": "Gestionnaire Playlists", "pl.step1.title": "Fichier Base de Données", "pl.step1.desc": "Sélectionnez le fichier usrlocal_media.db (pull via ADB depuis /usr/data/, ou sélectionnez une copie locale).", "pl.browse": "Parcourir…", "pl.pullFromDevice": "Tirer de l'appareil", "pl.noFile": "Aucun fichier sélectionné", "pl.stats.title": "Statistiques Bibliothèque", "pl.stats.tracks": "Pistes", "pl.stats.albums": "Albums", "pl.stats.artists": "Artistes", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoris", "pl.push.title": "Envoyer à l'Appareil", "pl.push.desc": "Envoyer la base de données modifiée à l'appareil via ADB.", "pl.push.btn": "Envoyer la base",
         "adb.status.idle": "Appuyez sur Démarrer pour détecter l'appareil.",
         "adb.status.checking": "Détection…",
         "adb.status.noAdb": "ADB non trouvé. Installez Android platform-tools.",
@@ -1435,6 +1601,7 @@
         "credits.sub": "Herramientas de modding de firmware para HibyOS DAPs",
         "title.firmware": "Firmware Modder", "title.database": "Actualizar BD", "title.credits": "Créditos",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
+        "nav.playlists": "Gestor Playlists", "title.playlists": "Gestor Playlists", "pl.step1.title": "Archivo de Base de Datos", "pl.step1.desc": "Selecciona el archivo usrlocal_media.db del dispositivo (pull vía ADB desde /usr/data/, o selecciona una copia local).", "pl.browse": "Examinar…", "pl.pullFromDevice": "Extraer del dispositivo", "pl.noFile": "Ningún archivo seleccionado", "pl.stats.title": "Estadísticas Biblioteca", "pl.stats.tracks": "Pistas", "pl.stats.albums": "Álbumes", "pl.stats.artists": "Artistas", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoritos", "pl.push.title": "Enviar al Dispositivo", "pl.push.desc": "Enviar la base de datos modificada al dispositivo vía ADB.", "pl.push.btn": "Enviar base de datos",
         "adb.status.idle": "Pulsa Iniciar para detectar el dispositivo.",
         "adb.status.checking": "Detectando…",
         "adb.status.noAdb": "ADB no encontrado. Instala Android platform-tools.",
@@ -2660,6 +2827,470 @@
       });
     });
 
+
+    // ═══════════════════════════════════════════════
+    // INLINE PROMPT / CONFIRM
+    // ═══════════════════════════════════════════════
+
+    let inlinePromptResolveFn = null;
+    function inlinePromptResolve(val) {
+      document.getElementById("inline-prompt-modal").style.display = "none";
+      if (inlinePromptResolveFn) { inlinePromptResolveFn(val); inlinePromptResolveFn = null; }
+    }
+    function showPrompt(title, defaultValue) {
+      return new Promise(resolve => {
+        inlinePromptResolveFn = resolve;
+        document.getElementById("inline-prompt-title").textContent = title;
+        const inp = document.getElementById("inline-prompt-input");
+        inp.value = defaultValue || "";
+        document.getElementById("inline-prompt-modal").style.display = "";
+        setTimeout(() => { inp.focus(); inp.select(); }, 50);
+        inp.onkeydown = (e) => {
+          if (e.key === "Enter") inlinePromptResolve(inp.value);
+          if (e.key === "Escape") inlinePromptResolve(null);
+        };
+      });
+    }
+
+    // ═══════════════════════════════════════════════
+    // PLAYLIST MANAGER
+    // ═══════════════════════════════════════════════
+
+    let plDbPath = null;
+    let plPlaylists = [];
+    let plCurrentView = null; // { type: "playlist"|"favorites"|"history"|"recent", id? }
+    let plTracks = [];
+    let plSelectedTracks = new Set();
+
+    async function plBrowseDb() {
+      const file = await window.api.pickFile("Select usrlocal_media.db", [
+        { name: "SQLite Database", extensions: ["db"] },
+      ]);
+      if (file) plLoadDb(file);
+    }
+
+    async function plPullFromDevice() {
+      const dest = await window.api.pickFolder("Save database to");
+      if (!dest) return;
+      const remote = "/usr/data/usrlocal_media.db";
+      const result = await window.api.adbPull(remote, dest);
+      if (result.ok) {
+        const localPath = dest + (dest.includes("\\") ? "\\" : "/") + "usrlocal_media.db";
+        plLoadDb(localPath);
+      }
+    }
+
+    async function plLoadDb(dbPath) {
+      plDbPath = dbPath;
+      document.getElementById("pl-db-path").textContent = dbPath.split(/[/\\]/).pop();
+      document.getElementById("pl-db-path").title = dbPath;
+
+      // Load stats
+      const stats = await window.api.playlistStats(dbPath);
+      if (stats.error) {
+        plStatus(SVG_ERR + " " + stats.error, true);
+        return;
+      }
+      document.getElementById("pl-stat-tracks").textContent = stats.total_tracks.toLocaleString();
+      document.getElementById("pl-stat-albums").textContent = stats.total_albums.toLocaleString();
+      document.getElementById("pl-stat-artists").textContent = stats.total_artists.toLocaleString();
+      document.getElementById("pl-stat-playlists").textContent = stats.total_playlists;
+      document.getElementById("pl-stat-favorites").textContent = stats.total_favorites.toLocaleString();
+      document.getElementById("pl-stats-card").style.display = "";
+
+      // Load playlists
+      const data = await window.api.playlistList(dbPath);
+      if (data.error) { plStatus(SVG_ERR + " " + data.error, true); return; }
+      plPlaylists = data.playlists;
+
+      // Auto-select first playlist before building select
+      if (plPlaylists.length > 0) {
+        plCurrentView = { type: "playlist", id: plPlaylists[0].id };
+      }
+      plBuildSelect();
+
+      document.getElementById("pl-main-card").style.display = "";
+      document.getElementById("pl-push-card").style.display = adbConnected ? "" : "none";
+      document.getElementById("pl-pull-btn").style.display = adbConnected ? "" : "none";
+
+      if (plCurrentView) plLoadTracks();
+    }
+
+    function plBuildSelect() {
+      const sel = document.getElementById("pl-select");
+      let html = "";
+      if (plPlaylists.length > 0) {
+        html += '<optgroup label="Playlists">';
+        for (const p of plPlaylists) {
+          const selected = plCurrentView && plCurrentView.type === "playlist" && plCurrentView.id === p.id ? " selected" : "";
+          html += `<option value="playlist:${p.id}"${selected}>${p.name}</option>`;
+        }
+        html += "</optgroup>";
+      }
+      html += '<optgroup label="Special">';
+      html += '<option value="favorites">★ ' + t("pl.stats.favorites") + '</option>';
+      html += "</optgroup>";
+      sel.innerHTML = html;
+
+      // Update button visibility
+      const isPlaylist = plCurrentView && plCurrentView.type === "playlist";
+      const isFavorites = plCurrentView && plCurrentView.type === "favorites";
+      const canEdit = isPlaylist || isFavorites;
+      document.getElementById("pl-rename-btn").style.display = isPlaylist ? "" : "none";
+      document.getElementById("pl-delete-btn").style.display = isPlaylist ? "" : "none";
+      document.getElementById("pl-export-btn").style.display = isPlaylist ? "" : "none";
+      document.getElementById("pl-add-btn").style.display = canEdit ? "" : "none";
+      document.getElementById("pl-remove-sel-btn").style.display = canEdit ? "" : "none";
+      document.getElementById("pl-remove-sel-btn").disabled = true;
+    }
+
+    function plSwitchPlaylist() {
+      const val = document.getElementById("pl-select").value;
+      if (val.startsWith("playlist:")) {
+        plCurrentView = { type: "playlist", id: parseInt(val.split(":")[1]) };
+      } else {
+        plCurrentView = { type: val };
+      }
+      const isPlaylist = plCurrentView.type === "playlist";
+      const isFavorites = plCurrentView.type === "favorites";
+      const canEdit = isPlaylist || isFavorites;
+      document.getElementById("pl-rename-btn").style.display = isPlaylist ? "" : "none";
+      document.getElementById("pl-delete-btn").style.display = isPlaylist ? "" : "none";
+      document.getElementById("pl-export-btn").style.display = isPlaylist ? "" : "none";
+      document.getElementById("pl-add-btn").style.display = canEdit ? "" : "none";
+      document.getElementById("pl-remove-sel-btn").style.display = canEdit ? "" : "none";
+      document.getElementById("pl-remove-sel-btn").disabled = true;
+      plLoadTracks();
+    }
+
+    async function plLoadTracks() {
+      if (!plDbPath || !plCurrentView) return;
+      const list = document.getElementById("pl-track-list");
+      list.innerHTML = '<div class="empty-msg">Loading…</div>';
+      plSelectedTracks.clear();
+      document.getElementById("pl-filter").value = "";
+
+      let data;
+      if (plCurrentView.type === "playlist") {
+        data = await window.api.playlistTracks(plDbPath, plCurrentView.id);
+      } else if (plCurrentView.type === "favorites") {
+        data = await window.api.playlistFavorites(plDbPath);
+      }
+
+      if (data.error) {
+        list.innerHTML = `<div class="empty-msg">${SVG_ERR} ${data.error}</div>`;
+        return;
+      }
+
+      plTracks = data.tracks;
+      document.getElementById("pl-track-count").textContent = `${plTracks.length} tracks`;
+      plRenderTracks();
+    }
+
+    let plFilterTimeout = null;
+    function plFilterTracks() {
+      clearTimeout(plFilterTimeout);
+      plFilterTimeout = setTimeout(() => {
+        plRenderTracks();
+      }, 150);
+    }
+
+    function plGetFilteredTracks() {
+      const q = (document.getElementById("pl-filter").value || "").trim().toLowerCase();
+      if (!q) return plTracks;
+      return plTracks.filter(t =>
+        t.name.toLowerCase().includes(q) ||
+        t.artist.toLowerCase().includes(q) ||
+        t.album.toLowerCase().includes(q)
+      );
+    }
+
+    function plFormatQuality(t) {
+      if (t.sample_rate >= 1000) {
+        const khz = (t.sample_rate / 1000).toFixed(t.sample_rate % 1000 ? 1 : 0);
+        const bit = t.bit_depth || "";
+        return bit ? `${khz}/${bit}` : `${khz}kHz`;
+      }
+      return "";
+    }
+
+    function plRenderTracks() {
+      const list = document.getElementById("pl-track-list");
+      const filtered = plGetFilteredTracks();
+      if (plTracks.length === 0) {
+        const canEdit = plCurrentView && (plCurrentView.type === "playlist" || plCurrentView.type === "favorites");
+        if (canEdit) {
+          list.innerHTML = '<div class="empty-msg" style="padding:24px; text-align:center;">'
+            + '<div style="margin-bottom:12px; color:var(--text-secondary);">Empty playlist</div>'
+            + '<button class="btn" onclick="plOpenAddModal()">Add tracks from library</button></div>';
+        } else {
+          list.innerHTML = '<div class="empty-msg">No tracks</div>';
+        }
+        return;
+      }
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="empty-msg">No matching tracks</div>';
+        document.getElementById("pl-track-count").textContent = `0 / ${plTracks.length} tracks`;
+        return;
+      }
+      const isFiltered = filtered.length !== plTracks.length;
+      document.getElementById("pl-track-count").textContent = isFiltered
+        ? `${filtered.length} / ${plTracks.length} tracks`
+        : `${plTracks.length} tracks`;
+      let html = '<div class="pl-header"><span class="pl-num">#</span><span class="pl-name">Title</span><span class="pl-artist">Artist</span><span class="pl-album">Album</span><span class="pl-quality">Quality</span></div>';
+      for (let i = 0; i < filtered.length; i++) {
+        const t = filtered[i];
+        const sel = plSelectedTracks.has(t.id) ? " selected" : "";
+        const q = plFormatQuality(t);
+        html += `<div class="pl-row${sel}" data-id="${t.id}" onclick="plSelectTrack(this, event)">`;
+        html += `<span class="pl-num">${i + 1}</span>`;
+        html += `<span class="pl-name" title="${t.name}">${t.name}</span>`;
+        html += `<span class="pl-artist" title="${t.artist}">${t.artist}</span>`;
+        html += `<span class="pl-album" title="${t.album}">${t.album}</span>`;
+        html += `<span class="pl-quality">${q}</span>`;
+        html += "</div>";
+      }
+      list.innerHTML = html;
+    }
+
+    // ═══ Add Tracks Modal ═══
+
+    let plAddSelectedIds = new Set();
+    let plAddTracks = [];
+    let plSearchTimeout = null;
+
+    function plOpenAddModal() {
+      if (!plDbPath || !plCurrentView) return;
+      if (plCurrentView.type !== "playlist" && plCurrentView.type !== "favorites") return;
+      plAddSelectedIds.clear();
+      plAddTracks = [];
+      document.getElementById("pl-add-search").value = "";
+      document.getElementById("pl-add-list").innerHTML = '<div class="empty-msg">Search or browse your library</div>';
+      document.getElementById("pl-add-count").textContent = "";
+      document.getElementById("pl-add-selected-count").textContent = "0 selected";
+      document.getElementById("pl-add-confirm-btn").disabled = true;
+      document.getElementById("pl-add-modal").style.display = "";
+      setTimeout(() => document.getElementById("pl-add-search").focus(), 50);
+      // Load initial batch
+      plDoLibrarySearch("");
+    }
+
+    function plCloseAddModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById("pl-add-modal").style.display = "none";
+    }
+
+    function plSearchLibrary() {
+      clearTimeout(plSearchTimeout);
+      plSearchTimeout = setTimeout(() => {
+        const q = document.getElementById("pl-add-search").value.trim();
+        plDoLibrarySearch(q);
+      }, 300);
+    }
+
+    async function plDoLibrarySearch(query) {
+      const list = document.getElementById("pl-add-list");
+      list.innerHTML = '<div class="empty-msg">Loading…</div>';
+      const data = await window.api.playlistLibrary(plDbPath, query || "");
+      if (data.error) {
+        list.innerHTML = `<div class="empty-msg">${SVG_ERR} ${data.error}</div>`;
+        return;
+      }
+      plAddTracks = data.tracks;
+      document.getElementById("pl-add-count").textContent = `${data.count} results`;
+      plRenderAddTracks();
+    }
+
+    function plRenderAddTracks() {
+      const list = document.getElementById("pl-add-list");
+      if (plAddTracks.length === 0) {
+        list.innerHTML = '<div class="empty-msg">No results</div>';
+        return;
+      }
+      let html = '<div class="pl-header"><span class="pl-num" style="width:20px"></span><span class="pl-name">Title</span><span class="pl-artist">Artist</span><span class="pl-album">Album</span><span class="pl-quality">Quality</span></div>';
+      for (const t of plAddTracks) {
+        const checked = plAddSelectedIds.has(t.id) ? " selected" : "";
+        const q = plFormatQuality(t);
+        html += `<div class="pl-row${checked}" data-id="${t.id}" onclick="plToggleAddTrack(this, event)">`;
+        html += `<span class="pl-num" style="width:20px; text-align:center;">${plAddSelectedIds.has(t.id) ? "✓" : ""}</span>`;
+        html += `<span class="pl-name" title="${t.name}">${t.name}</span>`;
+        html += `<span class="pl-artist" title="${t.artist}">${t.artist}</span>`;
+        html += `<span class="pl-album" title="${t.album}">${t.album}</span>`;
+        html += `<span class="pl-quality">${q}</span>`;
+        html += "</div>";
+      }
+      list.innerHTML = html;
+    }
+
+    function plToggleAddTrack(el, event) {
+      const id = parseInt(el.dataset.id);
+      if (plAddSelectedIds.has(id)) {
+        plAddSelectedIds.delete(id);
+        el.classList.remove("selected");
+        el.querySelector(".pl-num").textContent = "";
+      } else {
+        plAddSelectedIds.add(id);
+        el.classList.add("selected");
+        el.querySelector(".pl-num").textContent = "✓";
+      }
+      document.getElementById("pl-add-selected-count").textContent = `${plAddSelectedIds.size} selected`;
+      document.getElementById("pl-add-confirm-btn").disabled = plAddSelectedIds.size === 0;
+    }
+
+    async function plConfirmAdd() {
+      if (plAddSelectedIds.size === 0 || !plCurrentView) return;
+      const ids = [...plAddSelectedIds];
+      let result;
+      if (plCurrentView.type === "playlist") {
+        result = await window.api.playlistAddTracks(plDbPath, plCurrentView.id, "MEDIA_TABLE", ids);
+      } else if (plCurrentView.type === "favorites") {
+        result = await window.api.playlistAddFavorites(plDbPath, ids);
+      } else {
+        return;
+      }
+      if (result.error) { plStatus(SVG_ERR + " " + result.error, true); return; }
+      plCloseAddModal();
+      plStatus(SVG_OK + " Added " + result.added + " tracks", false);
+      if (plCurrentView.type === "playlist") {
+        const data = await window.api.playlistList(plDbPath);
+        plPlaylists = data.playlists;
+        plBuildSelect();
+        document.getElementById("pl-select").value = `playlist:${plCurrentView.id}`;
+      }
+      plLoadTracks();
+      // Update favorites stat
+      const stats = await window.api.playlistStats(plDbPath);
+      if (!stats.error) document.getElementById("pl-stat-favorites").textContent = stats.total_favorites.toLocaleString();
+    }
+
+    async function plCreatePlaylist() {
+      const name = await showPrompt("Playlist name:", "");
+      if (!name || !name.trim()) return;
+      const result = await window.api.playlistCreate(plDbPath, name.trim());
+      if (result.error) { plStatus(SVG_ERR + " " + result.error, true); return; }
+      plCurrentView = { type: "playlist", id: result.id };
+      const data = await window.api.playlistList(plDbPath);
+      plPlaylists = data.playlists;
+      plBuildSelect();
+      document.getElementById("pl-select").value = `playlist:${result.id}`;
+      plLoadTracks();
+      plStatus(SVG_OK + " Created: " + name.trim(), false);
+      document.getElementById("pl-stat-playlists").textContent = plPlaylists.length;
+    }
+
+    function plSelectTrack(el, event) {
+      const id = parseInt(el.dataset.id);
+      const multi = event && (event.metaKey || event.ctrlKey);
+      if (multi) {
+        if (plSelectedTracks.has(id)) {
+          plSelectedTracks.delete(id);
+          el.classList.remove("selected");
+        } else {
+          plSelectedTracks.add(id);
+          el.classList.add("selected");
+        }
+      } else {
+        document.querySelectorAll("#pl-track-list .pl-row").forEach(r => r.classList.remove("selected"));
+        plSelectedTracks.clear();
+        plSelectedTracks.add(id);
+        el.classList.add("selected");
+      }
+      const btn = document.getElementById("pl-remove-sel-btn");
+      if (btn) btn.disabled = plSelectedTracks.size === 0;
+    }
+
+
+    async function plRemoveSelected() {
+      if (plSelectedTracks.size === 0 || !plCurrentView) return;
+      const ids = [...plSelectedTracks];
+      let result;
+      if (plCurrentView.type === "playlist") {
+        result = await window.api.playlistRemoveTracks(plDbPath, plCurrentView.id, ids);
+      } else if (plCurrentView.type === "favorites") {
+        result = await window.api.playlistRemoveFavorites(plDbPath, ids);
+      } else {
+        return;
+      }
+      if (result.error) { plStatus(SVG_ERR + " " + result.error, true); return; }
+      plStatus(SVG_OK + " Removed " + result.removed + " tracks", false);
+      // Refresh
+      if (plCurrentView.type === "playlist") {
+        const data = await window.api.playlistList(plDbPath);
+        plPlaylists = data.playlists;
+        plBuildSelect();
+        document.getElementById("pl-select").value = `playlist:${plCurrentView.id}`;
+      }
+      plLoadTracks();
+      // Update favorites stat
+      const stats = await window.api.playlistStats(plDbPath);
+      if (!stats.error) document.getElementById("pl-stat-favorites").textContent = stats.total_favorites.toLocaleString();
+    }
+
+    async function plDeletePlaylist() {
+      if (!plCurrentView || plCurrentView.type !== "playlist") return;
+      const pl = plPlaylists.find(p => p.id === plCurrentView.id);
+      if (!pl) return;
+      if (!(await window.api.showConfirm(`Delete playlist "${pl.name}"?`))) return;
+      const result = await window.api.playlistDelete(plDbPath, plCurrentView.id);
+      if (result.error) { plStatus(SVG_ERR + " " + result.error, true); return; }
+      const data = await window.api.playlistList(plDbPath);
+      plPlaylists = data.playlists;
+      if (plPlaylists.length > 0) {
+        plCurrentView = { type: "playlist", id: plPlaylists[0].id };
+      } else {
+        plCurrentView = { type: "favorites" };
+      }
+      plBuildSelect();
+      plLoadTracks();
+      plStatus(SVG_OK + " Deleted: " + pl.name, false);
+      document.getElementById("pl-stat-playlists").textContent = plPlaylists.length;
+    }
+
+    async function plRenamePlaylist() {
+      if (!plCurrentView || plCurrentView.type !== "playlist") return;
+      const pl = plPlaylists.find(p => p.id === plCurrentView.id);
+      if (!pl) return;
+      const name = await showPrompt("New name:", pl.name);
+      if (!name || !name.trim() || name.trim() === pl.name) return;
+      const result = await window.api.playlistRename(plDbPath, plCurrentView.id, name.trim());
+      if (result.error) { plStatus(SVG_ERR + " " + result.error, true); return; }
+      const data = await window.api.playlistList(plDbPath);
+      plPlaylists = data.playlists;
+      plBuildSelect();
+      document.getElementById("pl-select").value = `playlist:${plCurrentView.id}`;
+      plStatus(SVG_OK + " Renamed to: " + name.trim(), false);
+    }
+
+    async function plExportPlaylist() {
+      if (!plCurrentView || plCurrentView.type !== "playlist") return;
+      const result = await window.api.playlistExport(plDbPath, plCurrentView.id);
+      if (result.canceled) return;
+      if (result.error) { plStatus(SVG_ERR + " " + result.error, true); return; }
+      plStatus(SVG_OK + " Exported " + result.exported + " tracks", false);
+    }
+
+
+    async function plPushToDevice() {
+      if (!plDbPath || !adbConnected) return;
+      const statusEl = document.getElementById("pl-push-status");
+      statusEl.innerHTML = SVG_WAIT + " Pushing…";
+      statusEl.style.color = "var(--accent)";
+      const result = await window.api.adbPush(plDbPath, "/usr/data/usrlocal_media.db");
+      if (result.ok) {
+        statusEl.innerHTML = SVG_OK + " Database pushed successfully";
+        statusEl.style.color = "var(--green)";
+      } else {
+        statusEl.innerHTML = SVG_ERR + " " + result.error;
+        statusEl.style.color = "var(--red)";
+      }
+    }
+
+    function plStatus(msg, isError) {
+      const el = document.getElementById("pl-status");
+      el.style.display = "";
+      el.innerHTML = msg;
+      el.style.color = isError ? "var(--red)" : "var(--green)";
+    }
 
     // ═══════════════════════════════════════════════
     // INIT

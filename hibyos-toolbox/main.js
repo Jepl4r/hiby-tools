@@ -1199,3 +1199,107 @@ ipcMain.handle("adb-push-firmware", async (event, localUptPath) => {
     return { ok: false, error: err.message };
   }
 });
+
+ipcMain.handle("show-confirm", async (event, message) => {
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: "question",
+    buttons: ["Cancel", "OK"],
+    defaultId: 1,
+    cancelId: 0,
+    message: message,
+  });
+  return result.response === 1;
+});
+
+// ═══════════════════════════════════════════════
+// PLAYLIST MANAGER
+// ═══════════════════════════════════════════════
+
+function runPlaylistCmd(...args) {
+  const scriptPath = path.join(getScriptsPath(), "electron_playlist_wrapper.py");
+  const python = resolvePython();
+  try {
+    const out = execFileSync(python, ["-u", scriptPath, ...args], {
+      env: getEnv(),
+      windowsHide: true,
+      timeout: 30000,
+      maxBuffer: 10 * 1024 * 1024,
+    });
+    return JSON.parse(out.toString());
+  } catch (err) {
+    const stderr = err.stderr ? err.stderr.toString().trim() : "";
+    const stdout = err.stdout ? err.stdout.toString().trim() : "";
+    if (stdout) {
+      try { return JSON.parse(stdout); } catch {}
+    }
+    return { error: stderr || err.message };
+  }
+}
+
+ipcMain.handle("playlist-list", async (event, dbPath) => {
+  return runPlaylistCmd("list", dbPath);
+});
+
+ipcMain.handle("playlist-tracks", async (event, dbPath, playlistId) => {
+  return runPlaylistCmd("tracks", dbPath, String(playlistId));
+});
+
+ipcMain.handle("playlist-favorites", async (event, dbPath) => {
+  return runPlaylistCmd("favorites", dbPath);
+});
+
+ipcMain.handle("playlist-history", async (event, dbPath) => {
+  return runPlaylistCmd("history", dbPath);
+});
+
+ipcMain.handle("playlist-recent", async (event, dbPath) => {
+  return runPlaylistCmd("recent", dbPath);
+});
+
+ipcMain.handle("playlist-library", async (event, dbPath, search) => {
+  const args = ["library", dbPath];
+  if (search) args.push(search);
+  return runPlaylistCmd(...args);
+});
+
+ipcMain.handle("playlist-stats", async (event, dbPath) => {
+  return runPlaylistCmd("stats", dbPath);
+});
+
+ipcMain.handle("playlist-create", async (event, dbPath, name) => {
+  return runPlaylistCmd("create", dbPath, name);
+});
+
+ipcMain.handle("playlist-delete", async (event, dbPath, playlistId) => {
+  return runPlaylistCmd("delete", dbPath, String(playlistId));
+});
+
+ipcMain.handle("playlist-remove-tracks", async (event, dbPath, playlistId, trackIds) => {
+  return runPlaylistCmd("remove", dbPath, String(playlistId), trackIds.join(","));
+});
+
+ipcMain.handle("playlist-remove-favorites", async (event, dbPath, trackIds) => {
+  return runPlaylistCmd("remove-favorites", dbPath, trackIds.join(","));
+});
+
+ipcMain.handle("playlist-add-tracks", async (event, dbPath, playlistId, sourceTable, trackIds) => {
+  return runPlaylistCmd("add", dbPath, String(playlistId), sourceTable, trackIds.join(","));
+});
+
+ipcMain.handle("playlist-add-favorites", async (event, dbPath, trackIds) => {
+  return runPlaylistCmd("add-favorites", dbPath, trackIds.join(","));
+});
+
+ipcMain.handle("playlist-rename", async (event, dbPath, playlistId, newName) => {
+  return runPlaylistCmd("rename", dbPath, String(playlistId), newName);
+});
+
+ipcMain.handle("playlist-export", async (event, dbPath, playlistId) => {
+  const result = await dialog.showSaveDialog(mainWindow, {
+    title: "Export Playlist",
+    defaultPath: `playlist_${playlistId}.m3u`,
+    filters: [{ name: "M3U Playlist", extensions: ["m3u"] }],
+  });
+  if (result.canceled) return { ok: false, canceled: true };
+  return runPlaylistCmd("export", dbPath, String(playlistId), result.filePath);
+});
