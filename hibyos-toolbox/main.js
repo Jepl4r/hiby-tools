@@ -886,7 +886,6 @@ ipcMain.handle("adb-pull", async (event, remotePath, localDir) => {
       let out = "";
       proc.stdout.on("data", (d) => {
         out += d.toString();
-         [ 45%] /path/to/file
         const m = d.toString().match(/\[\s*(\d+)%\]/);
         if (m) mainWindow.webContents.send("adb-transfer-progress", parseInt(m[1]));
       });
@@ -945,7 +944,6 @@ ipcMain.handle("adb-push", async (event, localPath, remotePath) => {
   }
 });
 
-(/dev/fb0 → rgb565le → ffmpeg → PNG)
 ipcMain.handle("adb-screenshot", async (event, savePath) => {
   try {
     const docsDir = app.getPath("documents");
