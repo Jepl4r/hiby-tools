@@ -692,6 +692,29 @@ ipcMain.handle("get-platform-info", async () => ({
   })(),
 }));
 
+ipcMain.handle("get-app-data-path", async () => {
+  return app.getPath("userData");
+});
+
+ipcMain.handle("ensure-dir", async (event, dirPath) => {
+  fs.mkdirSync(dirPath, { recursive: true });
+  return true;
+});
+
+ipcMain.handle("read-howto", async (event, filename) => {
+  try {
+    const resourceDir = path.join(process.resourcesPath, "assets", "how to");
+    const devDir = path.join(__dirname, "assets", "how to");
+    const dir = fs.existsSync(resourceDir) ? resourceDir : devDir;
+    const filePath = path.join(dir, filename);
+    if (!fs.existsSync(filePath)) return { ok: false, error: "File not found" };
+    const content = fs.readFileSync(filePath, "utf8");
+    return { ok: true, content };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
 
 // ═══════════════════════════════════════════════
 // ADB INTEGRATION
@@ -955,15 +978,16 @@ ipcMain.handle("adb-screenshot", async (event, savePath) => {
     const adb = resolveAdb();
     if (!adb) throw new Error("ADB not found");
 
-    const fd = fs.openSync(tmpRaw, "w");
-    try {
-      const fbData = execFileSync(adb, ["shell", "cat /dev/fb0"], {
-        env: getEnv(), maxBuffer: 2 * 1024 * 1024, timeout: 15000,
-      });
-      fs.writeSync(fd, fbData);
-    } finally {
-      fs.closeSync(fd);
-    }
+    const remoteTmp = "/tmp/fb_capture.raw";
+    execFileSync(adb, ["shell", `cat /dev/fb0 > ${remoteTmp}`], {
+      env: getEnv(), stdio: "pipe", timeout: 15000,
+    });
+    execFileSync(adb, ["pull", remoteTmp, tmpRaw], {
+      env: getEnv(), stdio: "pipe", timeout: 15000,
+    });
+    execFileSync(adb, ["shell", `rm ${remoteTmp}`], {
+      env: getEnv(), stdio: "pipe", timeout: 5000,
+    });
 
     const ffmpeg = resolveCmd("ffmpeg");
     execFileSync(ffmpeg, [

@@ -26,6 +26,7 @@
       --red: #e25c5c;
       --red-dim: rgba(226, 92, 92, 0.12);
       --blue: #5a9ec8;
+      --border-subtle: #2a2a38;
       --radius: 10px;
       --radius-sm: 6px;
       --font: "DM Sans", -apple-system, sans-serif;
@@ -98,6 +99,7 @@
       --red: #c93c3c;
       --red-dim: rgba(201, 60, 60, 0.1);
       --blue: #3a7bb5;
+      --border-subtle: #cccbc6;
     }
     .theme-light .terminal { background: #e4e3df; }
     .theme-light .btn-primary { color: #fff; }
@@ -105,6 +107,7 @@
     .sidebar-settings {
       border-top: 1px solid var(--border);
       -webkit-app-region: no-drag;
+      position: relative;
     }
     .settings-toggle-btn {
       display: flex; align-items: center; gap: 8px; width: 100%;
@@ -119,12 +122,17 @@
     }
     .settings-toggle-btn.open .chevron { transform: rotate(90deg); }
     .settings-panel {
-      max-height: 0; overflow: hidden; transition: max-height 0.25s ease;
+      max-height: 0; overflow: hidden; transition: max-height 0.25s ease, padding 0.25s ease;
       padding: 0 14px;
+      position: absolute; bottom: 100%; left: 0; right: 0;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: none;
+      z-index: 50;
     }
     .settings-panel.open {
       max-height: 300px;
-      padding: 0 14px 12px;
+      padding: 12px 14px;
     }
     .setting-row {
       margin-bottom: 10px;
@@ -387,6 +395,43 @@
     }
     .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
     .modal-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+
+    /* How to Use - markdown */
+    .howto-markdown { font-size: 13px; line-height: 1.7; color: var(--text-primary); word-wrap: break-word; overflow-wrap: break-word; min-width: 0; }
+    .howto-markdown h1 { font-size: 20px; font-weight: 700; margin: 0 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+    .howto-markdown h2 { font-size: 16px; font-weight: 600; margin: 22px 0 10px; padding-bottom: 4px; border-bottom: 1px solid var(--border-subtle); }
+    .howto-markdown h3 { font-size: 14px; font-weight: 600; margin: 18px 0 8px; }
+    .howto-markdown h4 { font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+    .howto-markdown h5 { font-size: 12px; font-weight: 600; margin: 12px 0 4px; }
+    .howto-markdown h6 { font-size: 11px; font-weight: 600; margin: 10px 0 4px; color: var(--text-muted); }
+    .howto-markdown p { margin: 0 0 12px; white-space: normal; }
+    .howto-markdown ul, .howto-markdown ol { margin: 0 0 12px; padding-left: 24px; }
+    .howto-markdown ul { list-style-type: disc; }
+    .howto-markdown ol { list-style-type: decimal; }
+    .howto-markdown ul ul, .howto-markdown ol ul { list-style-type: circle; }
+    .howto-markdown ul ul ul { list-style-type: square; }
+    .howto-markdown li { margin-bottom: 4px; }
+    .howto-markdown li > ul, .howto-markdown li > ol { margin-top: 4px; margin-bottom: 0; }
+    .howto-markdown code { background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: var(--mono); white-space: nowrap; }
+    .howto-markdown pre { background: var(--bg-tertiary); padding: 12px 16px; border-radius: 8px; overflow-x: auto; margin: 0 0 12px; border: 1px solid var(--border-subtle); }
+    .howto-markdown pre code { background: none; padding: 0; border-radius: 0; font-size: 12px; white-space: pre; }
+    .howto-markdown strong { font-weight: 600; }
+    .howto-markdown em { font-style: italic; }
+    .howto-markdown a { color: var(--accent); text-decoration: none; }
+    .howto-markdown a:hover { text-decoration: underline; }
+    .howto-markdown blockquote { margin: 0 0 12px; padding: 4px 16px; border-left: 3px solid var(--accent); color: var(--text-secondary); background: var(--bg-tertiary); border-radius: 0 6px 6px 0; }
+    .howto-markdown blockquote p { margin-bottom: 4px; }
+    .howto-markdown blockquote p:last-child { margin-bottom: 0; }
+    .howto-markdown hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+    .howto-markdown img { max-width: 100%; border-radius: 8px; margin: 4px 0; }
+    .howto-markdown table { width: 100%; border-collapse: collapse; margin: 0 0 12px; font-size: 12px; }
+    .howto-markdown th, .howto-markdown td { padding: 6px 12px; border: 1px solid var(--border); text-align: left; }
+    .howto-markdown th { background: var(--bg-tertiary); font-weight: 600; }
+    .howto-markdown tr:nth-child(even) { background: var(--bg-tertiary); }
+    .howto-markdown .task-list-item { list-style: none; margin-left: -24px; padding-left: 0; }
+    .howto-markdown .task-checkbox { margin-right: 6px; pointer-events: none; }
+    .howto-markdown del { text-decoration: line-through; color: var(--text-muted); }
+    .howto-btn-active { background: var(--accent) !important; color: var(--bg-primary) !important; }
 
     /* ADB file browser */
     .file-list { font-size: 0.85em; }
@@ -669,9 +714,21 @@
         </div>
       </div>
 
+      <!-- ═══ How to Use ═══ -->
+      <div class="sidebar-settings">
+        <button class="settings-toggle-btn" onclick="switchPage('howto')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M6 6.5a2 2 0 113.5 1.5c-.5.4-1 .8-1 1.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="8.5" cy="12" r="0.7" fill="currentColor"/>
+          </svg>
+          <span data-i18n="nav.howto">HOW TO USE</span>
+        </button>
+      </div>
+
       <!-- ═══ Footer / Version ═══ -->
       <div class="sidebar-footer">
-        <div class="version-info">v1.3.0</div>
+        <div class="version-info">v1.3.1</div>
         <button class="info-btn" onclick="switchPage('credits')" title="Credits">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <circle cx="5" cy="5" r="4.2" stroke="currentColor" stroke-width="1.1"/>
@@ -894,14 +951,8 @@
 
             <!-- Screenshots -->
             <div class="card">
-              <div class="card-title" style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+              <div class="card-title">
                 <span data-i18n="adb.screenshots.title">Screenshots</span>
-                <button class="info-btn screenshot-help-btn" onclick="openScreenshotHelpModal()" title="Screenshot info" style="opacity:1;">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <circle cx="5" cy="5" r="4.2" stroke="currentColor" stroke-width="1.1"/>
-                    <text x="5" y="7.2" text-anchor="middle" font-size="6.5" font-weight="700" fill="currentColor" font-family="var(--font)">?</text>
-                  </svg>
-                </button>
               </div>
               <div class="card-desc" data-i18n="adb.screenshots.desc">Capture a screenshot from the device framebuffer.</div>
               <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
@@ -1057,6 +1108,30 @@
           </div>
         </div>
 
+        <!-- ═══ PAGE: HOW TO USE ═══ -->
+        <div id="page-howto" class="page">
+          <div class="card">
+            <div class="card-desc" data-i18n="howto.desc">Select a section to learn how it works.</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+              <button class="btn btn-sm" onclick="loadHowto('firmware')" id="howto-btn-firmware">
+                <span data-i18n="nav.firmware">Firmware Modder</span>
+              </button>
+              <button class="btn btn-sm" onclick="loadHowto('database')" id="howto-btn-database">
+                <span data-i18n="nav.database">Database Updater</span>
+              </button>
+              <button class="btn btn-sm" onclick="loadHowto('playlists')" id="howto-btn-playlists">
+                <span data-i18n="nav.playlists">Playlist Manager</span>
+              </button>
+              <button class="btn btn-sm" onclick="loadHowto('adb')" id="howto-btn-adb">
+                <span data-i18n="nav.adb">ADB Manager</span>
+              </button>
+            </div>
+          </div>
+          <div class="card" id="howto-content-card" style="display:none; overflow:hidden; min-width:0;">
+            <div id="howto-content" class="howto-markdown" style="min-width:0;"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -1131,49 +1206,6 @@
     </div>
   </div>
 
-  <!-- ═══ Screenshot Help Modal ═══ -->
-  <div id="screenshot-help-modal" class="modal-overlay" style="display:none;" onclick="closeScreenshotHelpModal(event)">
-    <div class="modal" onclick="event.stopPropagation()" style="width:560px; max-width:92vw;">
-      <div class="modal-header">
-        <div class="modal-title" data-i18n="adb.screenshots.help.title">Screenshot Glitches</div>
-        <button class="modal-close" onclick="closeScreenshotHelpModal()">&times;</button>
-      </div>
-      <div class="modal-desc" data-i18n="adb.screenshots.help.intro">Screenshots are captured from the Linux framebuffer (/dev/fb0). Some content is composited by the Ingenic IPU directly to the display, bypassing the framebuffer — this causes visual glitches.</div>
-
-      <div style="margin-bottom:16px;">
-        <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--red);" data-i18n="adb.screenshots.help.affected">Affected screens (will show glitch lines):</div>
-        <div style="font-size:12px; color:var(--text-secondary); line-height:1.7; padding-left:6px; white-space:pre-line;">
-          <span data-i18n="adb.screenshots.help.affected.list">• Main launcher (app grid icons)
-• Music browser category grid (Albums, Artists, Genres…)
-• Album art thumbnails in list views
-• Now playing screen album art</span>
-        </div>
-      </div>
-
-      <div style="margin-bottom:16px;">
-        <div style="font-size:13px; font-weight:600; margin-bottom:8px; color:var(--green);" data-i18n="adb.screenshots.help.clean">Clean screens (capture perfectly):</div>
-        <div style="font-size:12px; color:var(--text-secondary); line-height:1.7; padding-left:6px; white-space:pre-line;">
-          <span data-i18n="adb.screenshots.help.clean.list">• All settings menus
-• Playback settings (MSEB, EQ, PEQ, filters)
-• Now playing UI chrome (without album art)
-• File browser (text list view)</span>
-        </div>
-      </div>
-
-      <div class="info-box-warn" style="font-size:12px; line-height:1.6;">
-        <strong data-i18n="adb.screenshots.help.theme.title">Theme note:</strong>
-        <span data-i18n="adb.screenshots.help.theme.desc">The Dark theme renders UI elements in pink/magenta in the framebuffer — this is not a capture artifact. Use Light theme for accurate colors.</span>
-      </div>
-
-      <div style="margin-top:14px; text-align:right;">
-        <a class="credits-link" style="font-size:12px; padding:6px 14px;" onclick="window.api.openExternal('https://github.com/hiby-modding/hiby-mods/blob/main/docs/SCREENSHOTS.md')">
-          <svg width="14" height="14" viewBox="0 0 18 18" fill="none"><path d="M9 1.5C4.86 1.5 1.5 4.86 1.5 9c0 3.31 2.15 6.12 5.13 7.11.38.07.52-.16.52-.36v-1.26c-2.09.45-2.53-1.01-2.53-1.01-.34-.87-.83-1.1-.83-1.1-.68-.46.05-.45.05-.45.75.05 1.15.77 1.15.77.67 1.14 1.75.81 2.17.62.07-.48.26-.81.47-.99-1.67-.19-3.42-.83-3.42-3.71 0-.82.29-1.49.77-2.01-.08-.19-.33-.95.07-1.98 0 0 .63-.2 2.06.77a7.18 7.18 0 013.74 0c1.43-.97 2.06-.77 2.06-.77.4 1.03.15 1.79.07 1.98.48.53.77 1.2.77 2.01 0 2.89-1.76 3.52-3.43 3.71.27.23.51.69.51 1.39v2.07c0 .2.14.43.52.36A7.5 7.5 0 0016.5 9c0-4.14-3.36-7.5-7.5-7.5z" fill="currentColor"/></svg>
-          <span data-i18n="adb.screenshots.help.docs">Full documentation</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
   <!-- ═══ Add Tracks Modal ═══ -->
   <div id="pl-add-modal" class="modal-overlay" style="display:none;" onclick="plCloseAddModal(event)">
     <div class="modal" onclick="event.stopPropagation()" style="width:700px; max-width:95vw;">
@@ -1212,6 +1244,18 @@
         <button class="btn btn-sm" onclick="inlinePromptResolve(null)">Cancel</button>
         <button class="btn" onclick="inlinePromptResolve(document.getElementById('inline-prompt-input').value)">OK</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══ Reboot Toast Overlay ═══ -->
+  <div id="reboot-toast-overlay" class="modal-overlay" style="display:none;" onclick="closeRebootToast(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="width:340px; text-align:center; padding:32px 28px;">
+      <div style="margin-bottom:14px;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+          <path d="M17.65 6.35A7.96 7.96 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" fill="var(--accent)"/>
+        </svg>
+      </div>
+      <div id="reboot-toast-msg" style="font-size:14px; font-weight:600; color:var(--text-primary);"></div>
     </div>
   </div>
 
@@ -1330,9 +1374,9 @@
         "deps.empty": "Click \"Check\" to verify", "deps.btn": "Check dependencies",
         "deps.bundled": "bundled", "deps.system": "system", "deps.installed": "installed", "deps.missing": "missing",
         "credits.sub": "Firmware modding tools for HibyOS DAPs",
-        "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Credits",
+        "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Credits", "title.howto": "How to Use", "nav.howto": "HOW TO USE", "howto.desc": "Select a section to learn how it works.",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
-        "nav.playlists": "Playlist Manager", "title.playlists": "Playlist Manager", "pl.step1.title": "Database File", "pl.step1.desc": "Select the usrlocal_media.db file from the device (pull it via ADB from /usr/data/, or select a local copy).", "pl.browse": "Browse…", "pl.pullFromDevice": "Pull from device", "pl.noFile": "No file selected", "pl.stats.title": "Library Stats", "pl.stats.tracks": "Tracks", "pl.stats.albums": "Albums", "pl.stats.artists": "Artists", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favorites", "pl.push.title": "Push to Device", "pl.push.desc": "Push the modified database back to the device via ADB.", "pl.push.btn": "Push database",
+        "nav.playlists": "Playlist Manager", "title.playlists": "Playlist Manager", "pl.step1.title": "Database File", "pl.step1.desc": "Select the usrlocal_media.db file from the device (pull it via ADB from /usr/data/, or select a local copy).", "pl.browse": "Browse…", "pl.pullFromDevice": "Pull from device", "pl.noFile": "No file selected", "pl.stats.title": "Library Stats", "pl.stats.tracks": "Tracks", "pl.stats.albums": "Albums", "pl.stats.artists": "Artists", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favorites", "pl.push.title": "Push to Device", "pl.push.desc": "Push the modified database back to the device via ADB.", "pl.push.btn": "Push database", "pl.push.pushed": "Database pushed successfully", "pl.push.rebooting": "Device is rebooting…",
         "adb.status.idle": "Press Start to detect the device.",
         "adb.status.checking": "Detecting…",
         "adb.status.noAdb": "ADB not found. Install Android platform-tools.",
@@ -1349,15 +1393,6 @@
         "adb.screenshots.desc": "Capture a screenshot from the device framebuffer.",
         "adb.btn.openScreenshots": "Open Folder",
         "adb.btn.processes": "Processes", "adb.processes.title": "Running Processes", "adb.btn.dmesg": "Kernel Log", "adb.btn.saveDmesg": "Save to file", "adb.btn.refreshDmesg": "Refresh", "adb.terminal.title": "Terminal",
-        "adb.screenshots.help.title": "Screenshot Glitches",
-        "adb.screenshots.help.intro": "Screenshots are captured from the Linux framebuffer (/dev/fb0). Some content is composited by the Ingenic IPU directly to the display, bypassing the framebuffer — this causes visual glitches.",
-        "adb.screenshots.help.affected": "Affected screens (will show glitch lines):",
-        "adb.screenshots.help.affected.list": "• Main launcher (app grid icons)\n• Music browser category grid (Albums, Artists, Genres…)\n• Album art thumbnails in list views\n• Now playing screen album art",
-        "adb.screenshots.help.clean": "Clean screens (capture perfectly):",
-        "adb.screenshots.help.clean.list": "• All settings menus\n• Playback settings (MSEB, EQ, PEQ, filters)\n• Now playing UI chrome (without album art)\n• File browser (text list view)",
-        "adb.screenshots.help.theme.title": "Theme note:",
-        "adb.screenshots.help.theme.desc": "The Dark theme renders UI elements in pink/magenta in the framebuffer — this is not a capture artifact. Use Light theme for accurate colors.",
-        "adb.screenshots.help.docs": "Full documentation",
       },
       it: {
         "nav.firmware": "Firmware Modder", "nav.database": "Database Updater",
@@ -1397,9 +1432,9 @@
         "deps.empty": "Clicca \"Verifica\" per controllare", "deps.btn": "Verifica dipendenze",
         "deps.bundled": "incluso nell'app", "deps.system": "di sistema", "deps.installed": "installato", "deps.missing": "mancante",
         "credits.sub": "Firmware modding tools per HibyOS DAPs",
-        "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Crediti",
+        "title.firmware": "Firmware Modder", "title.database": "Database Updater", "title.credits": "Crediti", "title.howto": "Come Usare", "nav.howto": "COME USARE", "howto.desc": "Seleziona una sezione per scoprire come funziona.",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
-        "nav.playlists": "Gestione Playlist", "title.playlists": "Gestione Playlist", "pl.step1.title": "File Database", "pl.step1.desc": "Seleziona il file usrlocal_media.db dal dispositivo (pull via ADB da /usr/data/, o seleziona una copia locale).", "pl.browse": "Sfoglia…", "pl.pullFromDevice": "Pull dal dispositivo", "pl.noFile": "Nessun file selezionato", "pl.stats.title": "Statistiche Libreria", "pl.stats.tracks": "Brani", "pl.stats.albums": "Album", "pl.stats.artists": "Artisti", "pl.stats.playlists": "Playlist", "pl.stats.favorites": "Preferiti", "pl.push.title": "Invia al Dispositivo", "pl.push.desc": "Invia il database modificato al dispositivo via ADB.", "pl.push.btn": "Invia database",
+        "nav.playlists": "Gestione Playlist", "title.playlists": "Gestione Playlist", "pl.step1.title": "File Database", "pl.step1.desc": "Seleziona il file usrlocal_media.db dal dispositivo (pull via ADB da /usr/data/, o seleziona una copia locale).", "pl.browse": "Sfoglia…", "pl.pullFromDevice": "Pull dal dispositivo", "pl.noFile": "Nessun file selezionato", "pl.stats.title": "Statistiche Libreria", "pl.stats.tracks": "Brani", "pl.stats.albums": "Album", "pl.stats.artists": "Artisti", "pl.stats.playlists": "Playlist", "pl.stats.favorites": "Preferiti", "pl.push.title": "Invia al Dispositivo", "pl.push.desc": "Invia il database modificato al dispositivo via ADB.", "pl.push.btn": "Invia database", "pl.push.pushed": "Database inviato con successo", "pl.push.rebooting": "Il dispositivo si sta riavviando…",
         "adb.status.idle": "Premi Avvia per rilevare il dispositivo.",
         "adb.status.checking": "Rilevamento…",
         "adb.status.noAdb": "ADB non trovato. Installa Android platform-tools.",
@@ -1417,15 +1452,6 @@
         "adb.btn.openScreenshots": "Apri Cartella",
         "adb.btn.processes": "Processi", "adb.processes.title": "Processi in Esecuzione", "adb.btn.processes": "Processus", "adb.processes.title": "Processus en cours", "adb.btn.processes": "Procesos", "adb.processes.title": "Procesos en ejecución", "adb.btn.dmesg": "Log Kernel", "adb.btn.saveDmesg": "Salva su file", "adb.btn.refreshDmesg": "Aggiorna",
         "adb.terminal.title": "Terminale",
-        "adb.screenshots.help.title": "Glitch negli Screenshot",
-        "adb.screenshots.help.intro": "Gli screenshot vengono catturati dal framebuffer Linux (/dev/fb0). Alcuni contenuti vengono compositi dall'IPU Ingenic direttamente sul display, bypassando il framebuffer — questo causa glitch visivi.",
-        "adb.screenshots.help.affected": "Schermate con glitch (linee corrotte):",
-        "adb.screenshots.help.affected.list": "• Launcher principale (griglia icone app)\n• Griglia categorie browser musicale (Album, Artisti, Generi…)\n• Miniature album art nelle liste\n• Album art nella schermata di riproduzione",
-        "adb.screenshots.help.clean": "Schermate pulite (cattura perfetta):",
-        "adb.screenshots.help.clean.list": "• Tutti i menu impostazioni\n• Impostazioni riproduzione (MSEB, EQ, PEQ, filtri)\n• UI riproduzione (senza album art)\n• Browser file (vista lista)",
-        "adb.screenshots.help.theme.title": "Nota sul tema:",
-        "adb.screenshots.help.theme.desc": "Il tema Scuro mostra gli elementi UI in rosa/magenta nel framebuffer — non è un artefatto della cattura. Usa il tema Chiaro per colori accurati.",
-        "adb.screenshots.help.docs": "Documentazione completa",
       },
       de: {
         "nav.firmware": "Firmware Modder", "nav.database": "Datenbank Updater",
@@ -1465,9 +1491,9 @@
         "deps.empty": "Klicke \"Prüfen\" zum Verifizieren", "deps.btn": "Abhängigkeiten prüfen",
         "deps.bundled": "gebündelt", "deps.system": "System", "deps.installed": "installiert", "deps.missing": "fehlt",
         "credits.sub": "Firmware-Modding-Tools für HibyOS DAPs",
-        "title.firmware": "Firmware Modder", "title.database": "Datenbank Updater", "title.credits": "Credits",
+        "title.firmware": "Firmware Modder", "title.database": "Datenbank Updater", "title.credits": "Credits", "title.howto": "Anleitung", "nav.howto": "ANLEITUNG", "howto.desc": "Wähle einen Bereich, um zu erfahren, wie er funktioniert.",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
-        "nav.playlists": "Playlist Manager", "title.playlists": "Playlist Manager", "pl.step1.title": "Datenbankdatei", "pl.step1.desc": "Wähle die usrlocal_media.db vom Gerät (per ADB Pull von /usr/data/, oder wähle eine lokale Kopie).", "pl.browse": "Durchsuchen…", "pl.pullFromDevice": "Vom Gerät ziehen", "pl.noFile": "Keine Datei ausgewählt", "pl.stats.title": "Bibliothek-Statistiken", "pl.stats.tracks": "Titel", "pl.stats.albums": "Alben", "pl.stats.artists": "Künstler", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoriten", "pl.push.title": "Zum Gerät senden", "pl.push.desc": "Die geänderte Datenbank per ADB zurück auf das Gerät senden.", "pl.push.btn": "Datenbank senden",
+        "nav.playlists": "Playlist Manager", "title.playlists": "Playlist Manager", "pl.step1.title": "Datenbankdatei", "pl.step1.desc": "Wähle die usrlocal_media.db vom Gerät (per ADB Pull von /usr/data/, oder wähle eine lokale Kopie).", "pl.browse": "Durchsuchen…", "pl.pullFromDevice": "Vom Gerät ziehen", "pl.noFile": "Keine Datei ausgewählt", "pl.stats.title": "Bibliothek-Statistiken", "pl.stats.tracks": "Titel", "pl.stats.albums": "Alben", "pl.stats.artists": "Künstler", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoriten", "pl.push.title": "Zum Gerät senden", "pl.push.desc": "Die geänderte Datenbank per ADB zurück auf das Gerät senden.", "pl.push.btn": "Datenbank senden", "pl.push.pushed": "Datenbank erfolgreich gesendet", "pl.push.rebooting": "Gerät wird neu gestartet…",
         "adb.status.idle": "Starten drücken um das Gerät zu erkennen.",
         "adb.status.checking": "Erkennung…",
         "adb.status.noAdb": "ADB nicht gefunden. Android platform-tools installieren.",
@@ -1484,15 +1510,6 @@
         "adb.screenshots.desc": "Screenshot vom Gerät-Framebuffer aufnehmen.",
         "adb.btn.openScreenshots": "Ordner öffnen",
         "adb.btn.processes": "Prozesse", "adb.processes.title": "Laufende Prozesse", "adb.btn.dmesg": "Kernel-Log", "adb.btn.saveDmesg": "Speichern", "adb.btn.refreshDmesg": "Aktualisieren", "adb.terminal.title": "Terminal",
-        "adb.screenshots.help.title": "Screenshot-Glitches",
-        "adb.screenshots.help.intro": "Screenshots werden vom Linux-Framebuffer (/dev/fb0) erfasst. Einige Inhalte werden von der Ingenic IPU direkt auf das Display gerendert und umgehen den Framebuffer — dies verursacht visuelle Glitches.",
-        "adb.screenshots.help.affected": "Betroffene Bildschirme (Glitch-Linien):",
-        "adb.screenshots.help.affected.list": "• Hauptlauncher (App-Raster)\n• Musik-Browser Kategorie-Raster (Alben, Künstler, Genres…)\n• Album-Art-Vorschaubilder in Listen\n• Album-Art auf dem Wiedergabebildschirm",
-        "adb.screenshots.help.clean": "Saubere Bildschirme (perfekte Aufnahme):",
-        "adb.screenshots.help.clean.list": "• Alle Einstellungsmenüs\n• Wiedergabe-Einstellungen (MSEB, EQ, PEQ, Filter)\n• Wiedergabe-UI (ohne Album-Art)\n• Dateibrowser (Listenansicht)",
-        "adb.screenshots.help.theme.title": "Hinweis zum Theme:",
-        "adb.screenshots.help.theme.desc": "Das Dark-Theme rendert UI-Elemente im Framebuffer in Pink/Magenta — das ist kein Aufnahmefehler. Verwende das Light-Theme für korrekte Farben.",
-        "adb.screenshots.help.docs": "Vollständige Dokumentation",
       },
       fr: {
         "nav.firmware": "Firmware Modder", "nav.database": "Mise à jour BDD",
@@ -1532,9 +1549,9 @@
         "deps.empty": "Cliquez \"Vérifier\" pour contrôler", "deps.btn": "Vérifier les dépendances",
         "deps.bundled": "inclus", "deps.system": "système", "deps.installed": "installé", "deps.missing": "manquant",
         "credits.sub": "Outils de modding firmware pour HibyOS DAPs",
-        "title.firmware": "Firmware Modder", "title.database": "Mise à jour BDD", "title.credits": "Crédits",
+        "title.firmware": "Firmware Modder", "title.database": "Mise à jour BDD", "title.credits": "Crédits", "title.howto": "Mode d'emploi", "nav.howto": "MODE D'EMPLOI", "howto.desc": "Sélectionnez une section pour découvrir comment elle fonctionne.",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
-        "nav.playlists": "Gestionnaire Playlists", "title.playlists": "Gestionnaire Playlists", "pl.step1.title": "Fichier Base de Données", "pl.step1.desc": "Sélectionnez le fichier usrlocal_media.db (pull via ADB depuis /usr/data/, ou sélectionnez une copie locale).", "pl.browse": "Parcourir…", "pl.pullFromDevice": "Tirer de l'appareil", "pl.noFile": "Aucun fichier sélectionné", "pl.stats.title": "Statistiques Bibliothèque", "pl.stats.tracks": "Pistes", "pl.stats.albums": "Albums", "pl.stats.artists": "Artistes", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoris", "pl.push.title": "Envoyer à l'Appareil", "pl.push.desc": "Envoyer la base de données modifiée à l'appareil via ADB.", "pl.push.btn": "Envoyer la base",
+        "nav.playlists": "Gestionnaire Playlists", "title.playlists": "Gestionnaire Playlists", "pl.step1.title": "Fichier Base de Données", "pl.step1.desc": "Sélectionnez le fichier usrlocal_media.db (pull via ADB depuis /usr/data/, ou sélectionnez une copie locale).", "pl.browse": "Parcourir…", "pl.pullFromDevice": "Tirer de l'appareil", "pl.noFile": "Aucun fichier sélectionné", "pl.stats.title": "Statistiques Bibliothèque", "pl.stats.tracks": "Pistes", "pl.stats.albums": "Albums", "pl.stats.artists": "Artistes", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoris", "pl.push.title": "Envoyer à l'Appareil", "pl.push.desc": "Envoyer la base de données modifiée à l'appareil via ADB.", "pl.push.btn": "Envoyer la base", "pl.push.pushed": "Base de données envoyée avec succès", "pl.push.rebooting": "L'appareil redémarre…",
         "adb.status.idle": "Appuyez sur Démarrer pour détecter l'appareil.",
         "adb.status.checking": "Détection…",
         "adb.status.noAdb": "ADB non trouvé. Installez Android platform-tools.",
@@ -1551,15 +1568,6 @@
         "adb.screenshots.desc": "Capturer une image depuis le framebuffer de l'appareil.",
         "adb.btn.openScreenshots": "Ouvrir le dossier",
         "adb.btn.processes": "Processi", "adb.processes.title": "Processi in Esecuzione", "adb.btn.processes": "Processus", "adb.processes.title": "Processus en cours", "adb.btn.processes": "Procesos", "adb.processes.title": "Procesos en ejecución", "adb.btn.dmesg": "Log Kernel", "adb.btn.saveDmesg": "Enregistrer", "adb.btn.refreshDmesg": "Actualiser", "adb.terminal.title": "Terminal",
-        "adb.screenshots.help.title": "Glitches dans les captures",
-        "adb.screenshots.help.intro": "Les captures sont prises depuis le framebuffer Linux (/dev/fb0). Certains contenus sont composités par l'IPU Ingenic directement sur l'écran, contournant le framebuffer — cela provoque des glitches visuels.",
-        "adb.screenshots.help.affected": "Écrans affectés (lignes de glitch) :",
-        "adb.screenshots.help.affected.list": "• Lanceur principal (grille d'icônes)\n• Grille de catégories musicales (Albums, Artistes, Genres…)\n• Miniatures d'album art dans les listes\n• Album art sur l'écran de lecture",
-        "adb.screenshots.help.clean": "Écrans propres (capture parfaite) :",
-        "adb.screenshots.help.clean.list": "• Tous les menus de paramètres\n• Paramètres de lecture (MSEB, EQ, PEQ, filtres)\n• Interface de lecture (sans album art)\n• Navigateur de fichiers (vue liste)",
-        "adb.screenshots.help.theme.title": "Note sur le thème :",
-        "adb.screenshots.help.theme.desc": "Le thème Sombre rend les éléments UI en rose/magenta dans le framebuffer — ce n'est pas un artefact. Utilisez le thème Clair pour des couleurs précises.",
-        "adb.screenshots.help.docs": "Documentation complète",
       },
       es: {
         "nav.firmware": "Firmware Modder", "nav.database": "Actualizar BD",
@@ -1599,9 +1607,9 @@
         "deps.empty": "Haz clic en \"Verificar\" para comprobar", "deps.btn": "Verificar dependencias",
         "deps.bundled": "incluido", "deps.system": "sistema", "deps.installed": "instalado", "deps.missing": "falta",
         "credits.sub": "Herramientas de modding de firmware para HibyOS DAPs",
-        "title.firmware": "Firmware Modder", "title.database": "Actualizar BD", "title.credits": "Créditos",
+        "title.firmware": "Firmware Modder", "title.database": "Actualizar BD", "title.credits": "Créditos", "title.howto": "Cómo Usar", "nav.howto": "CÓMO USAR", "howto.desc": "Selecciona una sección para descubrir cómo funciona.",
         "title.adb": "ADB Manager", "nav.adb": "ADB Manager",
-        "nav.playlists": "Gestor Playlists", "title.playlists": "Gestor Playlists", "pl.step1.title": "Archivo de Base de Datos", "pl.step1.desc": "Selecciona el archivo usrlocal_media.db del dispositivo (pull vía ADB desde /usr/data/, o selecciona una copia local).", "pl.browse": "Examinar…", "pl.pullFromDevice": "Extraer del dispositivo", "pl.noFile": "Ningún archivo seleccionado", "pl.stats.title": "Estadísticas Biblioteca", "pl.stats.tracks": "Pistas", "pl.stats.albums": "Álbumes", "pl.stats.artists": "Artistas", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoritos", "pl.push.title": "Enviar al Dispositivo", "pl.push.desc": "Enviar la base de datos modificada al dispositivo vía ADB.", "pl.push.btn": "Enviar base de datos",
+        "nav.playlists": "Gestor Playlists", "title.playlists": "Gestor Playlists", "pl.step1.title": "Archivo de Base de Datos", "pl.step1.desc": "Selecciona el archivo usrlocal_media.db del dispositivo (pull vía ADB desde /usr/data/, o selecciona una copia local).", "pl.browse": "Examinar…", "pl.pullFromDevice": "Extraer del dispositivo", "pl.noFile": "Ningún archivo seleccionado", "pl.stats.title": "Estadísticas Biblioteca", "pl.stats.tracks": "Pistas", "pl.stats.albums": "Álbumes", "pl.stats.artists": "Artistas", "pl.stats.playlists": "Playlists", "pl.stats.favorites": "Favoritos", "pl.push.title": "Enviar al Dispositivo", "pl.push.desc": "Enviar la base de datos modificada al dispositivo vía ADB.", "pl.push.btn": "Enviar base de datos", "pl.push.pushed": "Base de datos enviada con éxito", "pl.push.rebooting": "El dispositivo se está reiniciando…",
         "adb.status.idle": "Pulsa Iniciar para detectar el dispositivo.",
         "adb.status.checking": "Detectando…",
         "adb.status.noAdb": "ADB no encontrado. Instala Android platform-tools.",
@@ -1618,19 +1626,11 @@
         "adb.screenshots.desc": "Capturar una imagen desde el framebuffer del dispositivo.",
         "adb.btn.openScreenshots": "Abrir carpeta",
         "adb.btn.processes": "Processi", "adb.processes.title": "Processi in Esecuzione", "adb.btn.processes": "Processus", "adb.processes.title": "Processus en cours", "adb.btn.processes": "Procesos", "adb.processes.title": "Procesos en ejecución", "adb.btn.dmesg": "Log Kernel", "adb.btn.saveDmesg": "Guardar", "adb.btn.refreshDmesg": "Actualizar", "adb.terminal.title": "Terminal",
-        "adb.screenshots.help.title": "Glitches en capturas",
-        "adb.screenshots.help.intro": "Las capturas se toman desde el framebuffer Linux (/dev/fb0). Parte del contenido es compuesto por la IPU Ingenic directamente en la pantalla, sin pasar por el framebuffer — esto causa glitches visuales.",
-        "adb.screenshots.help.affected": "Pantallas afectadas (líneas de glitch):",
-        "adb.screenshots.help.affected.list": "• Lanzador principal (cuadrícula de iconos)\n• Cuadrícula de categorías musicales (Álbumes, Artistas, Géneros…)\n• Miniaturas de album art en listas\n• Album art en la pantalla de reproducción",
-        "adb.screenshots.help.clean": "Pantallas limpias (captura perfecta):",
-        "adb.screenshots.help.clean.list": "• Todos los menús de ajustes\n• Ajustes de reproducción (MSEB, EQ, PEQ, filtros)\n• UI de reproducción (sin album art)\n• Explorador de archivos (vista lista)",
-        "adb.screenshots.help.theme.title": "Nota sobre el tema:",
-        "adb.screenshots.help.theme.desc": "El tema Oscuro muestra los elementos UI en rosa/magenta en el framebuffer — no es un artefacto. Usa el tema Claro para colores precisos.",
-        "adb.screenshots.help.docs": "Documentación completa",
       }
     };
 
     let currentLang = "en";
+    let currentHowto = null;
     try { currentLang = localStorage.getItem("lang") || "en"; } catch {}
 
     function t(key) {
@@ -1642,11 +1642,7 @@
         const key = el.getAttribute("data-i18n");
         el.textContent = t(key);
       });
-      const activePage = document.querySelector(".nav-btn.active");
-      if (activePage) {
-        const page = activePage.getAttribute("data-page");
-        document.getElementById("page-title").textContent = t(`title.${page}`);
-      }
+      document.getElementById("page-title").textContent = t(`title.${currentPage}`);
       document.getElementById("lang-select").value = currentLang;
     }
 
@@ -1654,6 +1650,8 @@
       currentLang = lang;
       try { localStorage.setItem("lang", lang); } catch {}
       applyLang();
+      // Reload howto content if currently viewing it
+      if (currentHowto) loadHowto(currentHowto);
     }
 
     // ═══════════════════════════════════════════════
@@ -1668,18 +1666,20 @@
       embedArt: true, resizeCovers: false, dbRunning: false,
     };
 
+    let currentPage = "firmware";
+
     // ═══════════════════════════════════════════════
     // NAVIGATION
     // ═══════════════════════════════════════════════
     function switchPage(page) {
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       document.getElementById(`page-${page}`).classList.add("active");
-      // Don't highlight credits in nav (it has no nav button)
-      if (page !== "credits") {
+      if (page !== "credits" && page !== "howto") {
         document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
         const btn = document.querySelector(`.nav-btn[data-page="${page}"]`);
         if (btn) btn.classList.add("active");
       }
+      currentPage = page;
       document.getElementById("page-title").textContent = t(`title.${page}`);
     }
 
@@ -2030,6 +2030,14 @@
         btn.textContent = t("adb.btn.disconnect") || "Disconnect";
       } else {
         btn.innerHTML = `<span data-i18n="adb.btn.start">${t("adb.btn.start")}</span>`;
+      }
+      // Update Playlist Manager ADB-dependent buttons
+      document.getElementById("pl-pull-btn").style.display = connected ? "" : "none";
+      const pushCard = document.getElementById("pl-push-card");
+      if (pushCard && plDbPath) {
+        pushCard.style.display = connected ? "" : "none";
+      } else if (pushCard && !connected) {
+        pushCard.style.display = "none";
       }
     }
 
@@ -2665,15 +2673,6 @@
       document.getElementById("processes-modal").style.display = "none";
     }
 
-    // Screenshot help modal
-    function openScreenshotHelpModal() {
-      document.getElementById("screenshot-help-modal").style.display = "";
-    }
-    function closeScreenshotHelpModal(event) {
-      if (event && event.target !== event.currentTarget) return;
-      document.getElementById("screenshot-help-modal").style.display = "none";
-    }
-
     // Terminal — ANSI color code parser
     const ANSI_COLOR_MAP = {
       "0": null, // reset
@@ -2870,9 +2869,13 @@
     }
 
     async function plPullFromDevice() {
-      const dest = await window.api.pickFolder("Save database to");
-      if (!dest) return;
+      if (!adbConnected) return;
+      const statusEl = document.getElementById("pl-push-status");
       const remote = "/usr/data/usrlocal_media.db";
+      // Save to app data directory
+      const appData = await window.api.getAppDataPath();
+      const dest = appData + (appData.includes("\\") ? "\\" : "/") + "pulled_db";
+      await window.api.ensureDir(dest);
       const result = await window.api.adbPull(remote, dest);
       if (result.ok) {
         const localPath = dest + (dest.includes("\\") ? "\\" : "/") + "usrlocal_media.db";
@@ -3277,12 +3280,34 @@
       statusEl.style.color = "var(--accent)";
       const result = await window.api.adbPush(plDbPath, "/usr/data/usrlocal_media.db");
       if (result.ok) {
-        statusEl.innerHTML = SVG_OK + " Database pushed successfully";
+        statusEl.innerHTML = SVG_OK + " " + t("pl.push.pushed");
         statusEl.style.color = "var(--green)";
+        // Reboot the device after successful push
+        try {
+          await window.api.adbReboot();
+          showRebootToast();
+        } catch (e) {
+          console.error("Reboot failed:", e);
+        }
       } else {
         statusEl.innerHTML = SVG_ERR + " " + result.error;
         statusEl.style.color = "var(--red)";
       }
+    }
+
+    let rebootToastTimer = null;
+    function showRebootToast() {
+      const toast = document.getElementById("reboot-toast-overlay");
+      const msgEl = document.getElementById("reboot-toast-msg");
+      msgEl.textContent = t("pl.push.rebooting");
+      toast.style.display = "flex";
+      if (rebootToastTimer) clearTimeout(rebootToastTimer);
+      rebootToastTimer = setTimeout(() => { toast.style.display = "none"; rebootToastTimer = null; }, 5000);
+    }
+    function closeRebootToast(event) {
+      if (event && event.target !== event.currentTarget) return;
+      if (rebootToastTimer) { clearTimeout(rebootToastTimer); rebootToastTimer = null; }
+      document.getElementById("reboot-toast-overlay").style.display = "none";
     }
 
     function plStatus(msg, isError) {
@@ -3290,6 +3315,201 @@
       el.style.display = "";
       el.innerHTML = msg;
       el.style.color = isError ? "var(--red)" : "var(--green)";
+    }
+
+    // ═══════════════════════════════════════════════
+    // HOW TO USE
+    // ═══════════════════════════════════════════════
+    function parseMarkdown(src) {
+      src = src.replace(/^\uFEFF/, "");
+      function esc(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+      function inline(raw) {
+        const codeSpans = [];
+        let text = raw.replace(/`([^`]+)`/g, (_, code) => {
+          codeSpans.push(`<code>${esc(code)}</code>`);
+          return `\x00CODE${codeSpans.length - 1}\x00`;
+        });
+
+        text = esc(text);
+
+        text = text
+          .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" />')
+          .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+          .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+          .replace(/___(.+?)___/g, '<strong><em>$1</em></strong>')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(.+?)__/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/_(.+?)_/g, '<em>$1</em>')
+          .replace(/~~(.+?)~~/g, '<del>$1</del>')
+          .replace(/ {2,}$/gm, '<br/>');
+
+        text = text.replace(/\x00CODE(\d+)\x00/g, (_, idx) => codeSpans[parseInt(idx)]);
+        return text;
+      }
+
+      const lines = src.replace(/\r\n/g,"\n").split("\n");
+      let html = "";
+      let i = 0;
+
+      function parseList(startIndent) {
+        let items = [];
+        while (i < lines.length) {
+          const line = lines[i];
+          const m = line.match(/^(\s*)([-*]|\d+[.)]) (.*)$/);
+          if (!m) break;
+          const indent = m[1].length;
+          if (indent < startIndent) break;
+          if (indent > startIndent) {
+            const nested = parseList(indent);
+            if (items.length > 0) items[items.length - 1].children = nested;
+            continue;
+          }
+          const marker = m[2];
+          const content = m[3];
+          items.push({ marker, content, children: null });
+          i++;
+        }
+        const ordered = items.length > 0 && /^\d/.test(items[0].marker);
+        const tag = ordered ? "ol" : "ul";
+        let out = `<${tag}>`;
+        for (const item of items) {
+          let text = item.content;
+          let cls = "";
+          const taskMatch = text.match(/^\[( |[xX])\] (.*)$/);
+          if (taskMatch) {
+            const checked = taskMatch[1] !== " " ? " checked" : "";
+            text = `<input type="checkbox" class="task-checkbox"${checked} disabled /> ${inline(taskMatch[2])}`;
+            cls = ' class="task-list-item"';
+            out += `<li${cls}>${text}`;
+          } else {
+            out += `<li>${inline(text)}`;
+          }
+          if (item.children) out += item.children;
+          out += "</li>";
+        }
+        out += `</${tag}>`;
+        return out;
+      }
+
+      while (i < lines.length) {
+        const line = lines[i];
+
+        if (/^```/.test(line)) {
+          const lang = line.slice(3).trim();
+          i++;
+          let code = "";
+          while (i < lines.length && !/^```/.test(lines[i])) {
+            code += esc(lines[i]) + "\n";
+            i++;
+          }
+          i++;
+          const langAttr = lang ? ` class="language-${esc(lang)}"` : "";
+          html += `<pre><code${langAttr}>${code.replace(/\n$/,"")}</code></pre>`;
+          continue;
+        }
+
+        const hm = line.match(/^(#{1,6}) (.+)$/);
+        if (hm) {
+          const level = hm[1].length;
+          html += `<h${level}>${inline(hm[2])}</h${level}>`;
+          i++; continue;
+        }
+
+        if (/^([-*_])\s*\1\s*\1[\s\1]*$/.test(line.trim()) && line.trim().length >= 3) {
+          html += "<hr/>";
+          i++; continue;
+        }
+
+        if (/^\|(.+)\|$/.test(line.trim()) && i + 1 < lines.length && /^\|[\s:|-]+\|$/.test(lines[i+1].trim())) {
+          const headerCells = line.trim().slice(1,-1).split("|").map(c => c.trim());
+          const alignLine = lines[i+1].trim().slice(1,-1).split("|").map(c => c.trim());
+          const aligns = alignLine.map(a => {
+            if (/^:-+:$/.test(a)) return "center";
+            if (/^-+:$/.test(a)) return "right";
+            return "left";
+          });
+          i += 2;
+          let table = "<table><thead><tr>";
+          headerCells.forEach((c,j) => {
+            table += `<th style="text-align:${aligns[j]||"left"}">${inline(c)}</th>`;
+          });
+          table += "</tr></thead><tbody>";
+          while (i < lines.length && /^\|(.+)\|$/.test(lines[i].trim())) {
+            const cells = lines[i].trim().slice(1,-1).split("|").map(c => c.trim());
+            table += "<tr>";
+            cells.forEach((c,j) => {
+              table += `<td style="text-align:${aligns[j]||"left"}">${inline(c)}</td>`;
+            });
+            table += "</tr>";
+            i++;
+          }
+          table += "</tbody></table>";
+          html += table;
+          continue;
+        }
+
+        if (/^>\s?/.test(line)) {
+          let bqLines = [];
+          while (i < lines.length && /^>\s?/.test(lines[i])) {
+            bqLines.push(lines[i].replace(/^>\s?/, ""));
+            i++;
+          }
+          html += `<blockquote>${parseMarkdown(bqLines.join("\n"))}</blockquote>`;
+          continue;
+        }
+
+        if (/^\s*([-*]|\d+[.)]) /.test(line)) {
+          const m = line.match(/^(\s*)/);
+          const indent = m ? m[1].length : 0;
+          html += parseList(indent);
+          continue;
+        }
+
+        if (line.trim() === "") { i++; continue; }
+
+        let para = "";
+        while (i < lines.length) {
+          const l = lines[i];
+          if (l.trim() === "") break;
+          if (/^(#{1,6}) /.test(l)) break;
+          if (/^```/.test(l)) break;
+          if (/^>\s?/.test(l)) break;
+          if (/^\s*([-*]|\d+[.)]) /.test(l)) break;
+          if (/^\|(.+)\|$/.test(l.trim())) break;
+          if (/^([-*_])\s*\1\s*\1[\s\1]*$/.test(l.trim()) && l.trim().length >= 3) break;
+          if (para) para += "\n";
+          para += l;
+          i++;
+        }
+        if (para) html += `<p>${inline(para).replace(/\n/g, " ")}</p>`;
+      }
+
+      return html;
+    }
+
+    async function loadHowto(page) {
+      document.querySelectorAll("[id^='howto-btn-']").forEach(b => b.classList.remove("howto-btn-active"));
+      document.getElementById(`howto-btn-${page}`).classList.add("howto-btn-active");
+      currentHowto = page;
+      const contentCard = document.getElementById("howto-content-card");
+      const contentEl = document.getElementById("howto-content");
+      contentEl.innerHTML = SVG_WAIT + " Loading…";
+      contentCard.style.display = "";
+      let result = await window.api.readHowto(`${page}_${currentLang}.md`);
+      if (!result.ok) result = await window.api.readHowto(`${page}_en.md`);
+      if (result.ok) {
+        contentEl.innerHTML = parseMarkdown(result.content);
+        contentEl.querySelectorAll("a[href]").forEach(a => {
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.api.openExternal(a.href);
+          });
+        });
+      } else {
+        contentEl.innerHTML = SVG_ERR + " " + result.error;
+      }
     }
 
     // ═══════════════════════════════════════════════

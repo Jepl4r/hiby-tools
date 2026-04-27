@@ -33,6 +33,9 @@ contextBridge.exposeInMainWorld("api", {
   // Dependencies check
   checkDeps: () => ipcRenderer.invoke("check-deps"),
   getPlatformInfo: () => ipcRenderer.invoke("get-platform-info"),
+  getAppDataPath: () => ipcRenderer.invoke("get-app-data-path"),
+  ensureDir: (dirPath) => ipcRenderer.invoke("ensure-dir", dirPath),
+  readHowto: (filename) => ipcRenderer.invoke("read-howto", filename),
 
   // Open URL with system browser
   openExternal: (url) => ipcRenderer.invoke("open-external", url),
